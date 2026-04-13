@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AP PRINTER SYSTEM</title>
+    <title>AP ALL-IN-ONE PRINTER</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -13,33 +12,34 @@
 
     <header class="bg-[#064e3b] p-5 shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 id="appTitle" class="text-2xl font-black text-white tracking-widest uppercase">AP PRINTER SYSTEM</h1>
-            <button id="backToHub" class="hidden text-white border border-white px-4 py-2 rounded hover:bg-white hover:text-[#064e3b] transition font-bold uppercase text-sm">
-                ← Zum Hauptmenü
+            <h1 id="appTitle" class="text-2xl font-black text-white tracking-widest uppercase">AP PRINTER HUB</h1>
+            <button id="backToHub" class="hidden text-white border-2 border-white px-6 py-2 rounded-full hover:bg-white hover:text-[#064e3b] transition-all font-bold uppercase text-sm">
+                ← ZURÜCK ZUM MENÜ
             </button>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto p-4 mt-4">
+    <main class="max-w-7xl mx-auto p-4 mt-6">
         
-        <section id="hubSection" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <section id="hubSection" class="grid grid-cols-2 md:grid-cols-4 gap-6 animate-fadeIn">
             </section>
 
-        <section id="appSection" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fadeIn">
+        <section id="appSection" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-10 animate-fadeIn">
             
-            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 h-fit">
-                <h2 class="text-lg font-bold border-b pb-2 mb-4 uppercase text-gray-600">Konfiguration</h2>
-                <div id="configForm" class="space-y-4">
-                    </div>
+            <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-200 h-fit space-y-6">
+                <h2 class="text-xl font-black border-b-2 pb-2 uppercase text-gray-700 tracking-tighter">Konfiguration</h2>
                 
-                <div id="ghsContainer" class="mt-6 hidden">
-                    <label class="block text-xs font-bold mb-2 text-gray-500 uppercase">GHS Symbole</label>
-                    <div id="ghsPicker" class="grid grid-cols-5 gap-2 bg-gray-50 p-2 rounded border"></div>
+                <div id="dynamicFields" class="space-y-4">
+                    </div>
+
+                <div id="ghsArea" class="hidden space-y-2">
+                    <label class="block text-xs font-bold text-gray-400 uppercase">GHS Symbole</label>
+                    <div id="ghsPicker" class="grid grid-cols-5 gap-2 bg-gray-50 p-3 rounded-xl border-2 border-dashed"></div>
                 </div>
 
-                <div id="printSettings" class="mt-6 grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded border hidden">
+                <div id="printOptions" class="hidden grid grid-cols-2 gap-4 p-4 bg-yellow-50 rounded-xl border-2 border-yellow-100">
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase">Start-Pos (1-12)</label>
+                        <label class="block text-xs font-bold text-gray-500 uppercase">Start-Position</label>
                         <input type="number" id="startPos" min="1" max="12" value="1" class="w-full p-2 border rounded font-bold">
                     </div>
                     <div>
@@ -48,15 +48,16 @@
                     </div>
                 </div>
 
-                <button id="pdfBtn" class="w-full bg-[#064e3b] text-white py-4 rounded-lg font-black text-xl hover:bg-green-800 transition-all shadow-md mt-8 tracking-widest uppercase">
-                    PDF Generieren
+                <button id="pdfBtn" class="w-full bg-[#064e3b] text-white py-5 rounded-xl font-black text-2xl hover:bg-green-800 transition-all shadow-lg uppercase tracking-widest">
+                    PDF Dokument Erzeugen
                 </button>
             </div>
 
-            <div class="flex flex-col items-center">
-                <span id="previewLabel" class="text-xs font-bold text-gray-400 mb-2 uppercase tracking-widest">Vorschau</span>
-                <div id="previewContainer" class="preview-box shadow-2xl">
+            <div class="flex flex-col items-center sticky top-24">
+                <span class="text-xs font-black text-gray-400 mb-4 uppercase tracking-[0.3em]">Live-Vorschau</span>
+                <div id="previewContainer" class="preview-frame shadow-2xl">
                     </div>
+                <p id="formatInfo" class="mt-6 text-[10px] text-gray-400 uppercase font-bold text-center"></p>
             </div>
 
         </section>
