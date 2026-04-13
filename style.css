@@ -1,0 +1,39 @@
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+
+/* HUB KACHELN */
+.menu-card {
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+    padding: 1.5rem; background: white; border-radius: 1rem; border: 2px solid #e5e7eb;
+    transition: all 0.3s; cursor: pointer; text-decoration: none; text-align: center;
+}
+.menu-card:hover { transform: scale(1.05); border-color: #064e3b; box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+.menu-card img { height: 100px; object-fit: contain; margin-bottom: 1rem; }
+.menu-card span { font-weight: 900; text-transform: uppercase; font-size: 0.9rem; }
+
+/* VORSCHAU BOXEN */
+.preview-box { background: white; border: 1px solid #000; overflow: hidden; display: flex; flex-direction: column; }
+
+/* Spezifische Layouts innerhalb der Vorschau */
+.label-canvas { width: 100%; height: 100%; display: flex; flex-direction: column; box-sizing: border-box; font-family: Helvetica, Arial, sans-serif; }
+
+/* Rohrleitungsschilder Zonen */
+.schild-top { flex: 1; display: flex; align-items: center; justify-content: center; font-weight: 900; text-align: center; padding: 10px; }
+.schild-bot { height: 35%; display: flex; justify-content: space-between; align-items: center; padding: 5px 15px; }
+
+/* Behälter / Tankwagen Drittel-Layout */
+.zone-3 { flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; border-bottom: 1px dashed #eee; font-weight: 900; padding: 0 20px; }
+.zone-3:last-child { border-bottom: none; flex-direction: column; }
+
+/* LO/LC Farben */
+.color-lo, .color-no { background-color: #22c55e; color: #000; }
+.color-lc, .color-nc { background-color: #ef4444; color: #fff; }
+.color-ea { background-color: #ffffff; color: #000; }
+
+/* Helfer */
+.ghs-row { display: flex; gap: 5px; justify-content: center; height: 60%; align-items: center; }
+.ghs-row img { height: 90%; object-fit: contain; }
