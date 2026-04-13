@@ -1,25 +1,29 @@
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-.animate-fadeIn { animation: fadeIn 0.3s ease-in; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fadeIn { animation: fadeIn 0.3s ease-out; }
 
 .app-card { background: white; padding: 1.5rem; border-radius: 1rem; border: 2px solid #eee; display: flex; flex-direction: column; align-items: center; transition: 0.2s; cursor: pointer; }
-.app-card:hover { border-color: #064e3b; transform: scale(1.02); }
+.app-card:hover { border-color: #064e3b; transform: scale(1.02); box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
 .app-card img { height: 80px; margin-bottom: 1rem; object-fit: contain; }
 .app-card span { font-weight: 900; font-size: 0.75rem; text-transform: uppercase; text-align: center; }
 
-.preview-box { background: white; border: 1px solid #000; overflow: hidden; }
-.label-canvas { width: 100%; height: 100%; display: flex; flex-direction: column; font-family: Helvetica, Arial, sans-serif; }
+.preview-box { background: white; border: 1px solid #000; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.label-canvas { width: 100%; height: 100%; display: flex; flex-direction: column; font-family: Helvetica, Arial, sans-serif; box-sizing: border-box; }
 
-/* Zonen Layout */
-.z-top { height: 45%; display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px; font-weight: bold; overflow: hidden; }
-.z-mid { height: 35%; display: flex; align-items: center; justify-content: center; gap: 5px; }
-.z-mid img { height: 90%; width: auto; }
-.z-bot { height: 20%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-style: italic; text-transform: uppercase; font-size: 0.8rem; }
+/* Zonen Layout für Etiketten & Kanister */
+.z-top { flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; padding: 5px; font-weight: 900; overflow: hidden; white-space: pre-wrap; line-height: 1.1; }
+.z-mid { height: 35%; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 2px; }
+.z-mid img { height: 90%; width: auto; object-fit: contain; }
+.z-bot { height: 20%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-style: italic; text-transform: uppercase; font-size: 14px; }
+
+/* Behälter & Tankwagen Drittel-Layout */
+.z-third { flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 900; border-bottom: 1px dashed #ccc; padding: 0 20px; white-space: pre-wrap; line-height: 1.1;}
+.z-third:last-child { border-bottom: none; flex-direction: column; gap: 10px;}
 
 /* Farben */
-.c-white { background: #fff; color: #000; }
-.c-yellow { background: #ff0; color: #000; }
-.c-red { background: #f00; color: #fff; }
-.c-green { background: #22c55e; color: #000; }
-.c-blue { background: #3b82f6; color: #fff; }
-.c-brown { background: #78350f; color: #fff; }
-.c-violet { background: #a855f7; color: #fff; }
+.c-white { background: #ffffff; color: #000000; }
+.c-yellow { background: #fde047; color: #000000; }
+.c-red { background: #ef4444; color: #ffffff; }
+.c-green { background: #22c55e; color: #000000; }
+.c-blue { background: #3b82f6; color: #ffffff; }
+.c-brown { background: #78350f; color: #ffffff; }
+.c-violet { background: #a855f7; color: #ffffff; }
