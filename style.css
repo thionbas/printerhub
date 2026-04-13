@@ -1,34 +1,25 @@
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.animate-fadeIn { animation: fadeIn 0.4s ease-out; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.animate-fadeIn { animation: fadeIn 0.3s ease-in; }
 
-/* Hub Kacheln */
-.app-card {
-    background: white; border-radius: 1.5rem; padding: 1.5rem;
-    display: flex; flex-direction: column; align-items: center;
-    border: 2px solid #e5e7eb; transition: all 0.3s; cursor: pointer;
-}
-.app-card:hover { transform: translateY(-5px) scale(1.02); border-color: #064e3b; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
-.app-card img { height: 100px; object-fit: contain; margin-bottom: 1rem; }
-.app-card span { font-weight: 900; text-transform: uppercase; font-size: 0.8rem; text-align: center; color: #374151; letter-spacing: 0.05em; }
+.app-card { background: white; padding: 1.5rem; border-radius: 1rem; border: 2px solid #eee; display: flex; flex-direction: column; align-items: center; transition: 0.2s; cursor: pointer; }
+.app-card:hover { border-color: #064e3b; transform: scale(1.02); }
+.app-card img { height: 80px; margin-bottom: 1rem; object-fit: contain; }
+.app-card span { font-weight: 900; font-size: 0.75rem; text-transform: uppercase; text-align: center; }
 
-/* Vorschau Rahmen */
-.preview-frame { background: white; border: 1px solid #000; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+.preview-box { background: white; border: 1px solid #000; overflow: hidden; }
+.label-canvas { width: 100%; height: 100%; display: flex; flex-direction: column; font-family: Helvetica, Arial, sans-serif; }
 
-/* Schild Zonen */
-.label-canvas { width: 100%; height: 100%; display: flex; flex-direction: column; font-family: 'Helvetica', 'Arial', sans-serif; }
+/* Zonen Layout */
+.z-top { height: 45%; display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px; font-weight: bold; overflow: hidden; }
+.z-mid { height: 35%; display: flex; align-items: center; justify-content: center; gap: 5px; }
+.z-mid img { height: 90%; width: auto; }
+.z-bot { height: 20%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-style: italic; text-transform: uppercase; font-size: 0.8rem; }
 
-.zone-top { height: 40%; display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 10px; font-weight: 900; line-height: 1.1; overflow: hidden; }
-.zone-mid { height: 35%; display: flex; align-items: center; justify-content: center; gap: 5px; overflow: hidden; }
-.zone-bot { height: 25%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-style: italic; text-transform: uppercase; overflow: hidden; }
-
-/* GHS in Vorschau */
-.ghs-preview-img { height: 80%; width: auto; object-fit: contain; }
-
-/* Farben Klassen */
-.c-white { background-color: #ffffff; color: #000000; }
-.c-yellow { background-color: #fde047; color: #000000; }
-.c-red { background-color: #ef4444; color: #ffffff; }
-.c-blue { background-color: #3b82f6; color: #ffffff; }
-.c-green { background-color: #22c55e; color: #000000; }
-.c-brown { background-color: #78350f; color: #ffffff; }
-.c-violet { background-color: #a855f7; color: #ffffff; }
+/* Farben */
+.c-white { background: #fff; color: #000; }
+.c-yellow { background: #ff0; color: #000; }
+.c-red { background: #f00; color: #fff; }
+.c-green { background: #22c55e; color: #000; }
+.c-blue { background: #3b82f6; color: #fff; }
+.c-brown { background: #78350f; color: #fff; }
+.c-violet { background: #a855f7; color: #fff; }
