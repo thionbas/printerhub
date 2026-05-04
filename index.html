@@ -1,0 +1,2535 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRINTER HUB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root { --ap-green: #064e3b; }
+        body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+
+        /* Hauptmenü Karten */
+        .menu-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #1f2937;
+            box-shadow: 0 1px 2px rgba(0,0,0,.05);
+            transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+            cursor: pointer;
+        }
+        .menu-card:hover, .menu-card:active {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,.1);
+            border-color: var(--ap-green);
+        }
+        .menu-card .image-container {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #f3f4f6;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.75rem;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--ap-green);
+            letter-spacing: -0.02em;
+        }
+        .menu-card .menu-label {
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.875rem;
+            text-align: center;
+        }
+
+        /* GHS Picker generic */
+        .ghs-pick-item {
+            display: flex; flex-direction: column; align-items: center;
+            padding: 0.5rem; border: 2px solid #e5e7eb; border-radius: 0.375rem;
+            background: #fff; cursor: pointer; transition: all .15s;
+        }
+        .ghs-pick-item:hover { border-color: var(--ap-green); }
+        .ghs-pick-item.selected { border-color: var(--ap-green); background: #ecfdf5; }
+        .ghs-pick-item img { width: 2.25rem; height: 2.25rem; object-fit: contain; pointer-events: none; }
+
+        /* === SCHILDER (Rohrleitung) === */
+        #view-schilder .preview-wrapper {
+            width: 100%; max-width: 500px; aspect-ratio: 991 / 423; background: white;
+        }
+        #view-schilder .label-box {
+            width:100%; height:100%; display:flex; flex-direction:column;
+            padding:10px 15px; box-sizing:border-box; overflow:hidden;
+        }
+        #view-schilder .label-text {
+            flex:1; display:flex; align-items:center; justify-content:center;
+            font-weight:900; text-align:center; line-height:1.0;
+        }
+        #view-schilder .label-bottom { height:35%; display:flex; justify-content:space-between; align-items:center; }
+        #view-schilder .ghs-zone { display:flex; gap:3px; align-items:center; width:55%; }
+        #view-schilder .ghs-zone img { height:32px; width:32px; object-fit:contain; }
+        #view-schilder .signal-zone { text-align:center; font-weight:900; font-style:italic; font-size:0.85rem; width:25%; }
+        #view-schilder .arrow-zone { display:flex; justify-content:flex-end; width:15%; height:70%; }
+        .bg-pipe-white { background:#fff; color:#000; border:1px solid #ddd; }
+        .bg-pipe-yellow { background:#ff0; color:#000; }
+        .bg-pipe-red { background:#f00; color:#fff; }
+        .bg-pipe-brown { background:#8b4513; color:#fff; }
+        .bg-pipe-green { background:#080; color:#fff; }
+        .bg-pipe-blue { background:#00f; color:#fff; }
+        .bg-pipe-violet { background:#800080; color:#fff; }
+
+        /* === KANISTER / HOBBOCK (4xA6) === */
+        .a6-preview {
+            width: 100%; max-width: 500px; aspect-ratio: 1485/1050;
+            background: white; border: 1px solid #333; overflow: hidden;
+        }
+        .a6-canvas {
+            width:100%; height:100%; display:flex; flex-direction:column;
+            padding:15px; box-sizing:border-box;
+            font-family: Helvetica, Arial, sans-serif;
+        }
+        .a6-zone-top {
+            flex:1.2; display:flex; align-items:flex-end; justify-content:center;
+            font-weight:900; text-align:center; line-height:1.1; padding-bottom:5px;
+        }
+        .a6-zone-ghs { flex:0.8; display:flex; gap:10px; align-items:center; justify-content:center; }
+        .a6-zone-ghs img { max-height:40px; width:auto; object-fit:contain; }
+        .a6-zone-signal {
+            flex:0.5; display:flex; align-items:center; justify-content:center;
+            text-align:center; font-weight:900; font-style:italic;
+            font-size:1.2rem; text-transform:uppercase;
+        }
+        .a6-zone-bot {
+            flex:0.8; display:flex; align-items:flex-start; justify-content:center;
+            font-weight:bold; font-size:1.1rem; text-align:center; padding-top:5px;
+        }
+        .bg-fill-white { background:#fff; color:#000; }
+        .bg-fill-yellow { background:#fde047; color:#000; }
+        .bg-fill-red { background:#ef4444; color:#fff; }
+        .bg-fill-brown { background:#78350f; color:#fff; }
+        .bg-fill-green { background:#22c55e; color:#000; }
+        .bg-fill-blue { background:#3b82f6; color:#fff; }
+        .bg-fill-violet { background:#a855f7; color:#fff; }
+
+        /* === BEHÄLTER === */
+        #view-behaelter .preview-container {
+            width:100%; max-width:700px; aspect-ratio:297/210;
+            background:white; border:2px solid #333; position:relative; overflow:hidden;
+        }
+        #view-behaelter .label-canvas { width:100%; height:100%; display:flex; flex-direction:column; }
+        #view-behaelter .row-zone {
+            width:100%; height:33.333%; display:flex; align-items:center; justify-content:center;
+            text-align:center; padding:0 5%; box-sizing:border-box;
+            font-family:Helvetica,Arial,sans-serif; line-height:1;
+        }
+        #view-behaelter .row-zone.top { border-bottom:1px dashed #ccc; font-weight:900; }
+        #view-behaelter .row-zone.mid { border-bottom:1px dashed #ccc; font-weight:bold; }
+        #view-behaelter .row-zone.bot { flex-direction:column; justify-content:space-evenly; padding:5px; }
+        #view-behaelter .ghs-flex { display:flex; gap:10px; justify-content:center; align-items:center; height:65%; width:100%; }
+        #view-behaelter .ghs-flex img { max-height:100%; max-width:14%; object-fit:contain; }
+        #view-behaelter .signal-text { font-weight:900; font-style:italic; text-transform:uppercase; }
+
+        /* === PROBE GROSS === */
+        #view-probegross .preview-container {
+            width:100%; max-width:600px; aspect-ratio:991/423;
+            background:white; border:2px solid #000;
+        }
+        #view-probegross .label-canvas {
+            width:100%; height:100%; display:flex; flex-direction:column;
+            padding:10px 16px; box-sizing:border-box;
+            font-family:Helvetica,Arial,sans-serif;
+        }
+        #view-probegross .row {
+            width:100%; display:flex; align-items:center; line-height:1; overflow:hidden;
+        }
+        #view-probegross .row-line {
+            border-bottom:1px dashed #f0f0f0;
+        }
+        #view-probegross .row-label {
+            font-weight:900; text-transform:uppercase; flex-shrink:0;
+            color:#444; font-size:0.7rem; letter-spacing:0.05em;
+            width:5.5em; padding-right:6px;
+        }
+        #view-probegross .row-value {
+            flex:1; font-weight:900; text-align:left;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        #view-probegross .row-bottom {
+            flex:1; display:flex; align-items:center; justify-content:space-between; gap:8px;
+        }
+        #view-probegross .ghs-center { display:flex; gap:6px; align-items:center; height:100%; }
+        #view-probegross .ghs-center img { height:85%; max-height:42px; object-fit:contain; }
+        #view-probegross .signal-right {
+            font-weight:900; font-style:italic; font-size:0.8rem;
+            text-transform:uppercase;
+        }
+        #view-probegross .row-meta {
+            font-size:0.75rem; font-weight:700; color:#555; flex-shrink:0;
+        }
+
+        /* === PROBE KLEIN === */
+        #view-probeklein .preview-container {
+            width:356px; height:169px; background:white; border:1px solid #000; overflow:hidden;
+        }
+        #view-probeklein .label-canvas {
+            width:100%; height:100%; display:flex; flex-direction:column;
+            padding:8px; box-sizing:border-box;
+            font-family:Arial,Helvetica,sans-serif;
+        }
+        #view-probeklein .zone-top {
+            height:55%; width:100%; display:flex; align-items:center; justify-content:center;
+            text-align:center; font-weight:bold; font-size:24px;
+            line-height:1; word-break:break-all; border-bottom:1px solid #f0f0f0;
+        }
+        #view-probeklein .zone-bottom {
+            height:45%; display:flex; width:100%; align-items:flex-end;
+        }
+        #view-probeklein .bottom-left {
+            width:60%; height:100%; display:flex; flex-direction:column; justify-content:flex-end;
+        }
+        #view-probeklein .ghs-row { display:flex; gap:4px; margin-bottom:2px; }
+        #view-probeklein .ghs-row img { height:25px; width:25px; object-fit:contain; }
+        #view-probeklein .signal-text {
+            font-size:10px; font-weight:900; font-style:italic; text-transform:uppercase;
+        }
+        #view-probeklein .bottom-right {
+            width:40%; display:flex; flex-direction:column; align-items:flex-end;
+            font-size:9px; font-weight:bold;
+        }
+        #view-probeklein .date-line { width:100%; border-bottom:1px solid black; margin-top:2px; height:8px; }
+
+        /* === TANKWAGEN === */
+        #view-tankwagen .preview-container {
+            width:100%; max-width:750px; aspect-ratio:297/210;
+            background:white; border:2px solid #000; overflow:hidden;
+        }
+        #view-tankwagen .label-canvas { width:100%; height:100%; display:flex; flex-direction:column; background:white; }
+        #view-tankwagen .zone-container {
+            width:100%; height:14%; display:flex; align-items:center; justify-content:center;
+            text-align:center; padding:0 40px; box-sizing:border-box;
+            font-weight:800; font-family:Helvetica,Arial,sans-serif;
+            border-bottom:1px solid #ddd; white-space:nowrap; overflow:hidden; line-height:1;
+            color:#333;
+        }
+        #view-tankwagen .zone-substance {
+            width:100%; height:54%; display:flex; align-items:center; justify-content:center;
+            text-align:center; padding:0 40px; box-sizing:border-box;
+            font-weight:900; font-family:Helvetica,Arial,sans-serif;
+            border-bottom:2px solid #eee; white-space:pre-wrap; line-height:1.15;
+        }
+        #view-tankwagen .zone-ghs {
+            width:100%; height:20%; display:flex; align-items:center; justify-content:center;
+            gap:30px; border-bottom:1px solid #eee;
+        }
+        #view-tankwagen .ghs-flex { display:flex; gap:10px; height:80%; align-items:center; }
+        #view-tankwagen .ghs-flex img { height:100%; object-fit:contain; }
+        #view-tankwagen .signal-text {
+            font-weight:900; font-style:italic; font-size:1.8rem; text-transform:uppercase;
+        }
+        #view-tankwagen .zone-footer {
+            width:100%; height:12%; display:flex; justify-content:space-between; align-items:center;
+            padding:0 25px; box-sizing:border-box;
+            font-family:Helvetica,Arial,sans-serif;
+            font-size:1.4rem; font-weight:900; line-height:1.2;
+        }
+        #view-tankwagen .footer-right { text-align:right; }
+
+        /* === LO/LC === */
+        #view-lolc .preview-container {
+            width:100%; max-width:500px; aspect-ratio:991/423;
+            background:white; border:1px solid #ddd; overflow:hidden;
+        }
+        #view-lolc .label-canvas {
+            width:100%; height:100%; display:flex; align-items:center; justify-content:center;
+            text-align:center; font-weight:900;
+            font-family:'Helvetica','Arial',sans-serif !important;
+            padding:10px; box-sizing:border-box; white-space:nowrap;
+        }
+        #view-lolc #pText {
+            font-family:'Helvetica','Arial',sans-serif !important; font-weight:900;
+        }
+        .color-lo { background:#22c55e; color:#000; }
+        .color-lc { background:#ef4444; color:#fff; }
+        .color-no, .color-nc, .color-ea { background:#fff; color:#000; border:1px solid #eee; }
+
+        /* Mode toggle */
+        .mode-btn-active { background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.1); border:1px solid #d1d5db; }
+        .mode-btn-inactive { color:#6b7280; }
+
+        /* Hidden helper */
+        .hidden-section { display: none; }
+        .is-hidden { display: none !important; }
+
+        /* === ON-SCREEN KEYBOARD === */
+        #kbd-toggle.kbd-active {
+            background: #fff;
+            color: var(--ap-green);
+        }
+        .osk {
+            position: fixed;
+            left: 0; right: 0; bottom: 0;
+            background: #1f2937;
+            color: #fff;
+            box-shadow: 0 -8px 24px rgba(0,0,0,.35);
+            z-index: 100;
+            padding: 6px 6px 10px;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .osk.hidden { display: none; }
+        .osk-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 4px 8px 8px;
+            border-bottom: 1px solid rgba(255,255,255,.12);
+            margin-bottom: 6px;
+        }
+        .osk-target {
+            font-size: 0.75rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            color: #9ca3af;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            flex: 1; min-width: 0;
+        }
+        .osk-dismiss {
+            background: rgba(255,255,255,.12);
+            color: #fff; border: 0;
+            width: 32px; height: 32px;
+            border-radius: 6px;
+            font-size: 1rem; font-weight: 700;
+            cursor: pointer;
+        }
+        .osk-dismiss:hover { background: rgba(255,255,255,.22); }
+        .osk-keys {
+            display: flex; flex-direction: column; gap: 5px;
+            max-width: 920px; margin: 0 auto;
+        }
+        .osk-row {
+            display: flex; gap: 4px; justify-content: center;
+        }
+        .osk-key {
+            flex: 1 1 0;
+            min-width: 0;
+            height: 44px;
+            background: #374151;
+            color: #fff;
+            border: 0;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 2px 0 #111827;
+            transition: background .08s, transform .04s;
+            padding: 0 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+        }
+        .osk-key:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 0 #111827;
+            background: #4b5563;
+        }
+        .osk-key.osk-wide { flex: 1.7 1 0; }
+        .osk-key.osk-wider { flex: 2.4 1 0; }
+        .osk-key.osk-space { flex: 6 1 0; }
+        .osk-key.osk-mod {
+            background: #4b5563;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .osk-key.osk-mod.osk-active {
+            background: #10b981;
+            color: #042f2e;
+        }
+        .osk-key.osk-action {
+            background: var(--ap-green);
+        }
+        .osk-key.osk-back {
+            background: #b91c1c;
+            font-size: 1.1rem;
+        }
+        @media (max-width: 480px) {
+            .osk-key { height: 40px; font-size: 0.95rem; }
+            .osk-key.osk-mod { font-size: 0.7rem; }
+        }
+        /* Padding-Bottom auf body, damit der Inhalt nicht hinter der Tastatur verschwindet */
+        body.osk-open { padding-bottom: 280px; }
+        @media (max-width: 480px) {
+            body.osk-open { padding-bottom: 260px; }
+        }
+        /* Aktiv markiertes Eingabefeld */
+        .osk-target-input {
+            outline: 3px solid #10b981 !important;
+            outline-offset: 1px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 min-h-screen">
+
+    <!-- HEADER -->
+    <header class="bg-[#064e3b] p-5 shadow-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center gap-3">
+            <h1 id="header-title" class="text-lg sm:text-2xl md:text-3xl font-black text-white tracking-widest uppercase truncate flex-1 min-w-0">
+                PRINTER HUB
+            </h1>
+            <button id="kbd-toggle" onclick="toggleKeyboardMode()"
+                    class="text-white border border-white px-3 py-2 rounded hover:bg-white hover:text-[#064e3b] transition font-bold text-xs sm:text-sm tracking-wider whitespace-nowrap flex items-center gap-1">
+                <span aria-hidden="true">⌨</span><span id="kbd-toggle-label" class="hidden sm:inline uppercase">Tastatur</span>
+            </button>
+            <button id="back-btn" onclick="showView('home')"
+                    class="is-hidden text-white border border-white px-3 py-2 rounded hover:bg-white hover:text-[#064e3b] transition font-bold uppercase text-xs sm:text-sm tracking-wider whitespace-nowrap">
+                ← ZURÜCK
+            </button>
+        </div>
+    </header>
+
+    <!-- ON-SCREEN KEYBOARD (Dashboard-Modus) -->
+    <div id="osk" class="osk hidden" aria-hidden="true">
+        <div class="osk-bar">
+            <span id="osk-target-label" class="osk-target">Eingabe</span>
+            <button type="button" class="osk-dismiss" onclick="hideOsk(true)" aria-label="Tastatur schließen">✕</button>
+        </div>
+        <div id="osk-keys" class="osk-keys"></div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- HOME / HAUPTMENÜ                                -->
+    <!-- ============================================== -->
+    <main id="view-home" class="max-w-6xl mx-auto p-4 sm:p-6 mt-4">
+        <section class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl border border-gray-200">
+            <h2 class="text-xl sm:text-2xl font-black text-center border-b-4 border-[#064e3b] pb-4 mb-8 uppercase text-gray-800 tracking-wider">
+                Was möchten Sie drucken?
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                <div class="menu-card" onclick="showView('schilder')">
+                    <div class="image-container">RL</div>
+                    <span class="menu-label">Rohrleitungsschilder</span>
+                </div>
+                <div class="menu-card" onclick="showView('kanister')">
+                    <div class="image-container">KAN</div>
+                    <span class="menu-label">Kanister</span>
+                </div>
+                <div class="menu-card" onclick="showView('behaelter')">
+                    <div class="image-container">BHL</div>
+                    <span class="menu-label">Behälter</span>
+                </div>
+                <div class="menu-card" onclick="showView('probegross')">
+                    <div class="image-container">PG</div>
+                    <span class="menu-label">Probe Groß</span>
+                </div>
+                <div class="menu-card" onclick="showView('probeklein')">
+                    <div class="image-container">PK</div>
+                    <span class="menu-label">Probe Klein</span>
+                </div>
+                <div class="menu-card" onclick="showView('hobbock')">
+                    <div class="image-container">HOB</div>
+                    <span class="menu-label">Hobbock</span>
+                </div>
+                <div class="menu-card" onclick="showView('tankwagen')">
+                    <div class="image-container">TW</div>
+                    <span class="menu-label">Tankwagen</span>
+                </div>
+                <div class="menu-card" onclick="showView('lolc')">
+                    <div class="image-container">LO</div>
+                    <span class="menu-label">LO/LC &amp; EA</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ============================================== -->
+    <!-- SCHILDER (Rohrleitungsschilder) — L4743REV     -->
+    <!-- ============================================== -->
+    <main id="view-schilder" class="hidden-section max-w-6xl mx-auto p-4 sm:p-6 mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <section class="bg-white p-6 sm:p-8 rounded-lg shadow-xl border border-gray-200">
+            <h2 class="text-xl font-bold border-b pb-2 mb-6 uppercase text-gray-700">Konfiguration</h2>
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Stoffklasse (Farbe)</label>
+                    <select id="sch-subClass" class="w-full p-3 border-2 rounded-md bg-gray-50 font-bold outline-none focus:border-[#064e3b]">
+                        <option value="white">Neutral (Weiß)</option>
+                        <option value="yellow">Gase (Gelb)</option>
+                        <option value="red">Dampf (Rot)</option>
+                        <option value="brown">Brennbare Stoffe (Braun)</option>
+                        <option value="green">Wasser (Grün)</option>
+                        <option value="blue">Luft (Blau)</option>
+                        <option value="violet">Säuren / Laugen (Violett)</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Textinhalt</label>
+                        <input type="text" id="sch-mainText" class="w-full p-3 border-2 rounded-md font-bold outline-none focus:border-[#064e3b]" placeholder="z.B. Stickstoff">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Format</label>
+                        <select id="sch-textCase" class="w-full p-3 border-2 rounded-md font-bold outline-none focus:border-[#064e3b]">
+                            <option value="upper">GROSS</option>
+                            <option value="lower">klein</option>
+                            <option value="original">Original</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="flex justify-between text-sm font-bold mb-1 text-gray-600 uppercase">
+                        <span>Schriftgröße</span>
+                        <span id="sch-fontSizeVal" class="text-[#064e3b]">30</span>
+                    </label>
+                    <input type="range" id="sch-textSize" min="10" max="80" value="30" class="w-full accent-[#064e3b]">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Signalwort</label>
+                        <select id="sch-signal" class="w-full p-3 border-2 rounded-md font-bold outline-none focus:border-[#064e3b]">
+                            <option value="">Keines</option>
+                            <option value="GEFAHR">GEFAHR</option>
+                            <option value="ACHTUNG">ACHTUNG</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Pfeil</label>
+                        <select id="sch-arrowDir" class="w-full p-3 border-2 rounded-md font-bold outline-none focus:border-[#064e3b]">
+                            <option value="none">Kein Pfeil</option>
+                            <option value="right">Rechts →</option>
+                            <option value="left">Links ←</option>
+                            <option value="up">Oben ↑</option>
+                            <option value="down">Unten ↓</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2 text-gray-600 uppercase">GHS Symbole (Max. 9)</label>
+                    <div id="sch-ghsPicker" class="grid grid-cols-3 md:grid-cols-5 gap-2 bg-gray-50 p-3 rounded-md border-2"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-md border-2">
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Start-Position (1-12)</label>
+                        <input type="number" id="sch-startPos" min="1" max="12" value="1" class="w-full p-2 border rounded font-bold outline-none focus:border-[#064e3b]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Anzahl Etiketten</label>
+                        <input type="number" id="sch-printCount" min="1" max="12" value="12" class="w-full p-2 border rounded font-bold outline-none focus:border-[#064e3b]">
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mt-6">
+                <button id="sch-addBtn" class="bg-gray-700 text-white py-3 rounded-md font-bold text-sm hover:bg-gray-800 transition uppercase tracking-wider">
+                    + Zum Bogen
+                </button>
+                <button id="sch-pdfBtn" class="bg-[#064e3b] text-white py-3 rounded-md font-black text-sm hover:bg-green-800 transition uppercase tracking-wider">
+                    Bogen drucken
+                </button>
+            </div>
+
+            <div id="sch-batchList" class="mt-4 space-y-2"></div>
+        </section>
+        <section class="flex flex-col items-center">
+            <span class="text-sm font-bold text-gray-400 mb-3 uppercase tracking-widest">Vorschau (Einzelnes Etikett)</span>
+            <div class="preview-wrapper shadow-2xl">
+                <div id="sch-previewCard" class="label-box">
+                    <div id="sch-pText" class="label-text">TEXT</div>
+                    <div class="label-bottom">
+                        <div id="sch-pGhs" class="ghs-zone"></div>
+                        <div id="sch-pSignal" class="signal-zone"></div>
+                        <div id="sch-pArrow" class="arrow-zone">
+                            <svg id="sch-previewArrowSvg" viewBox="0 0 100 100" class="w-full h-full fill-current"></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-6 text-xs text-gray-500 text-center uppercase">
+                Optimiert für 99,1 x 42,3 mm (Avery L4743REV)
+            </p>
+        </section>
+    </main>
+
+    <!-- ============================================== -->
+    <!-- KANISTER — 4x A6 quer                           -->
+    <!-- ============================================== -->
+    <main id="view-kanister" class="hidden-section max-w-6xl mx-auto p-4 sm:p-6 mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <section class="bg-white p-6 sm:p-8 rounded-lg shadow-xl border border-gray-200">
+            <h2 class="text-xl font-bold border-b pb-2 mb-6 uppercase text-gray-700">Kanister (4x A6)</h2>
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Hintergrundfarbe</label>
+                    <select id="kan-bgColor" class="w-full p-3 border-2 rounded-md bg-gray-50 font-bold outline-none focus:border-[#064e3b]">
+                        <option value="white">Weiß</option>
+                        <option value="yellow">Gelb</option>
+                        <option value="red">Rot</option>
+                        <option value="green">Grün</option>
+                        <option value="blue">Blau</option>
+                        <option value="brown">Braun</option>
+                        <option value="violet">Violett</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Oben (Bezeichnung / Nummer)</label>
+                    <input type="text" id="kan-topText" class="w-full p-3 border-2 rounded-md font-bold outline-none focus:border-[#064e3b]" placeholder="z.B. Kanister 01" value="BEZEICHNUNG">
+                </div>
+                <div>
+                    <label class="flex justify-between text-sm font-bold mb-1 text-gray-600 uppercase">
+                        <span>Schriftgröße (Oben)</span>
+                        <span id="kan-fontSizeVal" class="text-[#064e3b]">40</span>
+                    </label>
+                    <input type="range" id="kan-fontSize" min="20" max="100" value="40" class="w-full accent-[#064e3b]">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2 text-gray-600 uppercase">Mitte (GHS Symbole)</label>
+                    <div id="kan-ghsPicker" class="grid grid-cols-5 gap-2 bg-gray-50 p-3 rounded-md border-2"></div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Signalwort</label>
+                    <select id="kan-signal" class="w-full p-3 border-2 rounded-md font-bold outline-none focus:border-[#064e3b]">
+                        <option value="">Keines</option>
+                        <option value="ACHTUNG">ACHTUNG</option>
+                        <option value="GEFAHR">GEFAHR</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Unten (Sonstiges)</label>
+                    <input type="text" id="kan-botText" class="w-full p-3 border-2 rounded-md font-bold outline-none focus:border-[#064e3b]" placeholder="Zusatzinfo...">
+                </div>
+            </div>
+            <button id="kan-pdfBtn" class="w-full bg-[#064e3b] text-white py-4 rounded-md font-black text-2xl hover:bg-green-800 transition-all shadow-md mt-8 tracking-widest uppercase">
+                4 ETIKETTEN DRUCKEN
+            </button>
+        </section>
+        <section class="flex flex-col items-center">
+            <span class="text-sm font-bold text-gray-400 mb-3 uppercase tracking-widest">Schild Vorschau (A6)</span>
+            <div class="a6-preview shadow-2xl">
+                <div id="kan-previewCard" class="a6-canvas bg-fill-white">
+                    <div id="kan-pTop" class="a6-zone-top">BEZEICHNUNG</div>
+                    <div id="kan-pGhs" class="a6-zone-ghs"></div>
+                    <div id="kan-pSignal" class="a6-zone-signal"></div>
+                    <div id="kan-pBot" class="a6-zone-bot">Sonstiges</div>
+                </div>
+            </div>
+            <p class="mt-6 text-xs text-gray-500 text-center uppercase">A4 Querformat — 4 Schilder</p>
+        </section>
+    </main>
+
+    <!-- ============================================== -->
+    <!-- BEHÄLTER — A4 quer                              -->
+    <!-- ============================================== -->
+    <main id="view-behaelter" class="hidden-section max-w-7xl mx-auto p-4 sm:p-6 mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <section class="bg-white p-6 sm:p-8 rounded-lg shadow-xl border border-gray-200 h-fit">
+            <h2 class="text-xl font-bold border-b pb-2 mb-6 uppercase text-gray-700">Konfiguration</h2>
+            <div class="space-y-6">
+                <div class="p-4 bg-gray-50 rounded-md border border-gray-200">
+                    <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">1. Anlagenteil (Oben)</label>
+                    <input type="text" id="beh-plantPart" maxlength="30" class="w-full p-3 border-2 rounded-md font-bold mb-3 outline-none focus:border-[#064e3b]" placeholder="z.B. A-101">
+                    <div class="flex items-center gap-4">
+                        <input type="range" id="beh-plantSize" min="30" max="150" value="80" class="flex-1 accent-[#064e3b]">
+                        <span id="beh-plantSizeDisplay" class="font-mono font-bold w-10">80</span>
+                    </div>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-md border border-gray-200">
+                    <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">2. Stoffname (Mitte)</label>
+                    <input type="text" id="beh-substanceName" maxlength="60" class="w-full p-3 border-2 rounded-md font-bold mb-3 outline-none focus:border-[#064e3b]" placeholder="z.B. NATRONLAUGE 50%">
+                    <div class="flex items-center gap-4">
+                        <input type="range" id="beh-substanceSize" min="20" max="100" value="50" class="flex-1 accent-[#064e3b]">
+                        <span id="beh-substanceSizeDisplay" class="font-mono font-bold w-10">50</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Signalwort</label>
+                        <select id="beh-signal" class="w-full p-3 border-2 rounded-md font-bold outline-none focus:border-[#064e3b]">
+                            <option value="">Keines</option>
+                            <option value="GEFAHR">GEFAHR</option>
+                            <option value="ACHTUNG">ACHTUNG</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Textformat</label>
+                        <select id="beh-textCase" class="w-full p-3 border-2 rounded-md font-bold outline-none focus:border-[#064e3b]">
+                            <option value="upper">NUR GROSSBUCHSTABEN</option>
+                            <option value="original">Originalschreibweise</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2 text-gray-600 uppercase">GHS Symbole (Max. 9)</label>
+                    <div id="beh-ghsPicker" class="grid grid-cols-5 gap-2 bg-white p-3 rounded-md border-2"></div>
+                </div>
+            </div>
+            <button id="beh-pdfBtn" class="w-full bg-[#064e3b] text-white py-4 rounded-md font-black text-2xl hover:bg-green-800 transition-all shadow-md mt-8 tracking-widest uppercase">
+                A4 PDF Erstellen
+            </button>
+        </section>
+        <section class="flex flex-col items-center">
+            <span class="text-sm font-bold text-gray-400 mb-3 uppercase tracking-widest">Echtzeit-Vorschau</span>
+            <div class="preview-container shadow-2xl">
+                <div id="beh-previewCard" class="label-canvas">
+                    <div id="beh-pPlant" class="row-zone top">ANLAGENTEIL</div>
+                    <div id="beh-pSubstance" class="row-zone mid">STOFFNAME</div>
+                    <div class="row-zone bot">
+                        <div id="beh-pGhs" class="ghs-flex"></div>
+                        <div id="beh-pSignal" class="signal-text"></div>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-4 text-xs text-gray-400 text-center uppercase">A4 Querformat</p>
+        </section>
+    </main>
+
+    <!-- ============================================== -->
+    <!-- PROBE GROSS — L4743 mit beschrifteten Zeilen   -->
+    <!-- ============================================== -->
+    <main id="view-probegross" class="hidden-section max-w-6xl mx-auto p-4 sm:p-6 mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <section class="bg-white p-6 rounded-lg shadow-xl border border-gray-200">
+            <h2 class="text-lg font-bold border-b pb-2 mb-4 uppercase text-gray-700">Probe Groß (L4743) — 12 Etiketten / Bogen</h2>
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-3 rounded border">
+                    <label class="block text-xs font-bold text-gray-500 uppercase">1. Stoffname</label>
+                    <input type="text" id="pg-substance" class="w-full p-2 border rounded font-bold mb-2" placeholder="z.B. Schwefelsäure">
+                    <input type="range" id="pg-substanceSize" min="8" max="40" value="14" class="w-full accent-[#064e3b]">
+                </div>
+                <div class="bg-gray-50 p-3 rounded border">
+                    <label class="block text-xs font-bold text-gray-500 uppercase">2. Probenahmestelle</label>
+                    <input type="text" id="pg-location" class="w-full p-2 border rounded font-bold mb-2" placeholder="z.B. Tank B-200">
+                    <input type="range" id="pg-locationSize" min="8" max="30" value="11" class="w-full accent-[#064e3b]">
+                </div>
+                <div class="bg-gray-50 p-3 rounded border">
+                    <label class="block text-xs font-bold text-gray-500 uppercase">3. Probenehmer</label>
+                    <input type="text" id="pg-sampler" class="w-full p-2 border rounded font-bold mb-2" placeholder="Name">
+                    <input type="range" id="pg-samplerSize" min="8" max="24" value="10" class="w-full accent-[#064e3b]">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Signalwort</label>
+                        <select id="pg-signal" class="w-full p-2 border-2 rounded font-bold">
+                            <option value="">KEINES</option>
+                            <option value="GEFAHR">GEFAHR</option>
+                            <option value="ACHTUNG">ACHTUNG</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Format</label>
+                        <select id="pg-textCase" class="w-full p-2 border-2 rounded font-bold">
+                            <option value="upper">GROSS</option>
+                            <option value="original">Original</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-2 text-gray-500 uppercase">GHS Symbole (Max. 9)</label>
+                    <div id="pg-ghsPicker" class="grid grid-cols-5 gap-2 bg-white p-2 rounded border-2"></div>
+                </div>
+
+                <!-- Position + Anzahl -->
+                <div class="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-md border-2">
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Start-Position (1-12)</label>
+                        <input type="number" id="pg-startPos" min="1" max="12" value="1" class="w-full p-2 border rounded font-bold outline-none focus:border-[#064e3b]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Anzahl Etiketten</label>
+                        <input type="number" id="pg-printCount" min="1" max="12" value="12" class="w-full p-2 border rounded font-bold outline-none focus:border-[#064e3b]">
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mt-6">
+                <button id="pg-addBtn" class="bg-gray-700 text-white py-3 rounded-md font-bold text-sm hover:bg-gray-800 transition uppercase tracking-wider">
+                    + Zum Bogen
+                </button>
+                <button id="pg-pdfBtn" class="bg-[#064e3b] text-white py-3 rounded-md font-black text-sm hover:bg-green-800 transition uppercase tracking-wider">
+                    Bogen drucken
+                </button>
+            </div>
+
+            <!-- Bogen-Liste -->
+            <div id="pg-batchList" class="mt-4 space-y-2"></div>
+        </section>
+
+        <section class="flex flex-col items-center">
+            <span class="text-sm font-bold text-gray-400 mb-3 uppercase tracking-widest">Vorschau (99,1×42,3 mm)</span>
+            <div class="preview-container shadow-2xl">
+                <div id="pg-previewCard" class="label-canvas">
+                    <div class="row row-line" style="height:24%">
+                        <span class="row-label">Stoff:</span>
+                        <span id="pg-pSubstance" class="row-value">STOFFNAME</span>
+                    </div>
+                    <div class="row row-line" style="height:21%">
+                        <span class="row-label">P.-Stelle:</span>
+                        <span id="pg-pLocation" class="row-value">PROBENAHMESTELLE</span>
+                    </div>
+                    <div class="row row-line" style="height:21%">
+                        <span class="row-label">Probenehmer:</span>
+                        <span id="pg-pSampler" class="row-value" style="flex:1">PROBENEHMER</span>
+                        <span class="row-meta">Datum: ___________</span>
+                    </div>
+                    <div class="row-bottom" style="height:34%">
+                        <div id="pg-pGhs" class="ghs-center"></div>
+                        <div id="pg-pSignal" class="signal-right"></div>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-4 text-xs text-gray-500 text-center uppercase">Avery L4743REV — Beschriftung links</p>
+        </section>
+    </main>
+
+    <!-- ============================================== -->
+    <!-- PROBE KLEIN — L4732 (80 Etiketten)              -->
+    <!-- ============================================== -->
+    <main id="view-probeklein" class="hidden-section max-w-5xl mx-auto p-4 sm:p-6 mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <section class="bg-white p-6 rounded-lg shadow-xl border border-gray-200">
+            <h2 class="text-lg font-bold border-b pb-2 mb-4 uppercase text-gray-700">Probe Klein (L4732) — 80 Etiketten / Bogen</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Stoffname</label>
+                    <input type="text" id="pk-substanceName" maxlength="40" class="w-full p-2 border-2 rounded font-bold outline-none focus:border-[#064e3b]" placeholder="z.B. Ethanol 70%">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Signalwort</label>
+                        <select id="pk-signal" class="w-full p-2 border-2 rounded font-bold text-sm">
+                            <option value="">KEINES</option>
+                            <option value="GEFAHR">GEFAHR</option>
+                            <option value="ACHTUNG">ACHTUNG</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Format</label>
+                        <select id="pk-textCase" class="w-full p-2 border-2 rounded font-bold text-sm">
+                            <option value="upper">GROSS</option>
+                            <option value="original">Original</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-2 text-gray-500 uppercase">GHS Symbole (Max. 9)</label>
+                    <div id="pk-ghsPicker" class="grid grid-cols-5 gap-1 bg-white p-2 rounded-md border-2"></div>
+                </div>
+
+                <!-- Position + Anzahl -->
+                <div class="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-md border-2">
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Start-Position (1-80)</label>
+                        <input type="number" id="pk-startPos" min="1" max="80" value="1" class="w-full p-2 border rounded font-bold outline-none focus:border-[#064e3b]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Anzahl Etiketten</label>
+                        <input type="number" id="pk-printCount" min="1" max="80" value="80" class="w-full p-2 border rounded font-bold outline-none focus:border-[#064e3b]">
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mt-6">
+                <button id="pk-addBtn" class="bg-gray-700 text-white py-3 rounded-md font-bold text-sm hover:bg-gray-800 transition uppercase tracking-wider">
+                    + Zum Bogen
+                </button>
+                <button id="pk-pdfBtn" class="bg-[#064e3b] text-white py-3 rounded-md font-black text-sm hover:bg-green-800 transition uppercase tracking-wider">
+                    Bogen drucken
+                </button>
+            </div>
+
+            <div id="pk-batchList" class="mt-4 space-y-2"></div>
+        </section>
+        <section class="flex flex-col items-center">
+            <span class="text-sm font-bold text-gray-400 mb-3 uppercase tracking-widest">Vorschau (35,6×16,9 mm)</span>
+            <div class="preview-container shadow-2xl">
+                <div id="pk-previewCard" class="label-canvas">
+                    <div id="pk-pSubstance" class="zone-top">STOFFNAME</div>
+                    <div class="zone-bottom">
+                        <div class="bottom-left">
+                            <div id="pk-pGhs" class="ghs-row"></div>
+                            <div id="pk-pSignal" class="signal-text"></div>
+                        </div>
+                        <div class="bottom-right">
+                            <span>Datum:</span>
+                            <div class="date-line"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-4 text-[10px] text-gray-400 uppercase text-center">Avery Zweckform L4732REV-100</p>
+        </section>
+    </main>
+
+    <!-- ============================================== -->
+    <!-- HOBBOCK — 4x A6                                 -->
+    <!-- ============================================== -->
+    <main id="view-hobbock" class="hidden-section max-w-6xl mx-auto p-4 sm:p-6 mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <section class="bg-white p-6 sm:p-8 rounded-lg shadow-xl border border-gray-200">
+            <h2 class="text-xl font-bold border-b pb-2 mb-6 uppercase text-gray-700">Hobbock (4x A6)</h2>
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Hintergrundfarbe</label>
+                    <select id="hob-bgColor" class="w-full p-3 border-2 rounded-md bg-gray-50 font-bold outline-none focus:border-[#064e3b]">
+                        <option value="white">Weiß (Neutral)</option>
+                        <option value="yellow">Gelb (Gase)</option>
+                        <option value="red">Rot (Dampf/Brand)</option>
+                        <option value="green">Grün (Wasser)</option>
+                        <option value="blue">Blau (Luft)</option>
+                        <option value="brown">Braun (Brennbare)</option>
+                        <option value="violet">Violett (Säuren/Laugen)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">1. Oben (Nummer / Bezeichnung)</label>
+                    <input type="text" id="hob-topText" class="w-full p-3 border-2 rounded-md font-bold outline-none focus:border-[#064e3b]" placeholder="z.B. 101-A">
+                </div>
+                <div>
+                    <label class="flex justify-between text-sm font-bold mb-1 text-gray-600 uppercase">
+                        <span>Schriftgröße (Oben)</span>
+                        <span id="hob-fontSizeVal" class="text-[#064e3b]">40</span>
+                    </label>
+                    <input type="range" id="hob-fontSize" min="20" max="100" value="40" class="w-full accent-[#064e3b]">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-2 text-gray-600 uppercase">2. Mitte (GHS Symbole, Max. 9)</label>
+                    <div id="hob-ghsPicker" class="grid grid-cols-5 gap-2 bg-gray-50 p-3 rounded-md border-2"></div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">3. Signalwort</label>
+                    <select id="hob-signal" class="w-full p-3 border-2 rounded-md font-bold outline-none focus:border-[#064e3b]">
+                        <option value="">Kein Signalwort</option>
+                        <option value="ACHTUNG">ACHTUNG</option>
+                        <option value="GEFAHR">GEFAHR</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">4. Unten (Sonstiges)</label>
+                    <input type="text" id="hob-botText" class="w-full p-3 border-2 rounded-md font-bold outline-none focus:border-[#064e3b]" placeholder="z.B. Nur für interne Zwecke">
+                </div>
+            </div>
+            <button id="hob-pdfBtn" class="w-full bg-[#064e3b] text-white py-4 rounded-md font-black text-2xl hover:bg-green-800 transition-all shadow-md mt-8 tracking-widest uppercase">
+                4 SCHILDER DRUCKEN (A4)
+            </button>
+        </section>
+        <section class="flex flex-col items-center">
+            <span class="text-sm font-bold text-gray-400 mb-3 uppercase tracking-widest">Einzel-Etikett Vorschau (A6)</span>
+            <div class="a6-preview shadow-2xl">
+                <div id="hob-previewCard" class="a6-canvas bg-fill-white">
+                    <div id="hob-pTop" class="a6-zone-top">NUMMER</div>
+                    <div id="hob-pGhs" class="a6-zone-ghs"></div>
+                    <div id="hob-pSignal" class="a6-zone-signal"></div>
+                    <div id="hob-pBot" class="a6-zone-bot">Sonstiges</div>
+                </div>
+            </div>
+            <p class="mt-6 text-xs text-gray-500 text-center uppercase">A4 Querformat — 4 Schilder</p>
+        </section>
+    </main>
+
+    <!-- ============================================== -->
+    <!-- TANKWAGEN — A4 quer                             -->
+    <!-- ============================================== -->
+    <main id="view-tankwagen" class="hidden-section max-w-7xl mx-auto p-4 sm:p-6 mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <section class="bg-white p-6 sm:p-8 rounded-lg shadow-xl border border-gray-200 h-fit">
+            <h2 class="text-xl font-bold border-b pb-2 mb-6 uppercase text-gray-700">Konfiguration</h2>
+            <div class="space-y-6">
+                <div class="p-4 bg-gray-50 rounded-md border border-gray-200">
+                    <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Container / Tankwagen-Nummer</label>
+                    <input type="text" id="tw-containerNo" class="w-full p-3 border-2 rounded-md font-bold mb-3 outline-none focus:border-[#064e3b]" placeholder="z.B. TW-45 / Container 12">
+                </div>
+                <div class="p-4 bg-gray-50 rounded-md border border-gray-200">
+                    <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Stoffname (Mehrzeilig möglich)</label>
+                    <textarea id="tw-substanceName" rows="2" class="w-full p-3 border-2 rounded-md font-bold mb-3 outline-none focus:border-[#064e3b] resize-none" placeholder="z.B. NATRONLAUGE&#10;50%"></textarea>
+                    <div class="flex items-center gap-4">
+                        <input type="range" id="tw-substanceSize" min="10" max="250" value="90" class="flex-1 accent-[#064e3b]">
+                        <span id="tw-substanceSizeDisplay" class="font-mono font-bold w-10 text-[#064e3b]">90</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Signalwort</label>
+                        <select id="tw-signal" class="w-full p-3 border-2 rounded-md font-bold outline-none focus:border-[#064e3b]">
+                            <option value="">KEINES</option>
+                            <option value="GEFAHR">GEFAHR</option>
+                            <option value="ACHTUNG">ACHTUNG</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">GHS Symbole (Max. 9)</label>
+                        <div id="tw-ghsPicker" class="grid grid-cols-5 gap-2 bg-white p-1 rounded border"></div>
+                    </div>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-md border border-gray-200 grid grid-cols-2 gap-4">
+                    <div class="col-span-2"><label class="block text-xs font-bold text-gray-500 uppercase">Fußzeile</label></div>
+                    <input type="text" id="tw-betrieb" placeholder="Betrieb" class="p-2 border rounded text-sm">
+                    <input type="text" id="tw-abteilung" placeholder="Abteilung" class="p-2 border rounded text-sm">
+                    <input type="text" id="tw-firma" placeholder="Firma" class="p-2 border rounded text-sm">
+                    <input type="text" id="tw-adresse" placeholder="Adresse" class="p-2 border rounded text-sm">
+                </div>
+            </div>
+            <button id="tw-pdfBtn" class="w-full bg-[#064e3b] text-white py-4 rounded-md font-black text-2xl hover:bg-green-800 transition-all shadow-md mt-8 tracking-widest uppercase">
+                TANKWAGEN PDF DRUCKEN
+            </button>
+        </section>
+        <section class="flex flex-col items-center">
+            <span class="text-sm font-bold text-gray-400 mb-3 uppercase tracking-widest">A4 Querformat Vorschau</span>
+            <div class="preview-container shadow-2xl">
+                <div id="tw-previewCard" class="label-canvas">
+                    <div id="tw-pContainer" class="zone-container">CONTAINER / TANKWAGEN-NR.</div>
+                    <div id="tw-pSubstance" class="zone-substance">STOFFNAME</div>
+                    <div class="zone-ghs">
+                        <div id="tw-pGhs" class="ghs-flex"></div>
+                        <div id="tw-pSignal" class="signal-text"></div>
+                    </div>
+                    <div class="zone-footer">
+                        <div class="footer-left">
+                            <span id="tw-pBetrieb">Betrieb</span> | <span id="tw-pAbteilung">Abteilung</span>
+                        </div>
+                        <div class="footer-right">
+                            <span id="tw-pFirma" class="font-bold">Firma</span><br>
+                            <span id="tw-pAdresse" class="text-[8px]">Adresse</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ============================================== -->
+    <!-- LO/LC & EA — 12 Etiketten L4743                 -->
+    <!-- ============================================== -->
+    <main id="view-lolc" class="hidden-section max-w-6xl mx-auto p-4 sm:p-6 mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <section class="bg-white p-6 sm:p-8 rounded-lg shadow-xl border border-gray-200">
+            <h2 class="text-xl font-bold border-b pb-2 mb-6 uppercase text-gray-700">LO / LC / EA</h2>
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Status (für alle Etiketten)</label>
+                    <select id="lolc-statusType" class="w-full p-4 border-2 rounded-md font-bold text-xl outline-none focus:border-[#064e3b]">
+                        <option value="LO">LO (Grün / Schwarz)</option>
+                        <option value="LC">LC (Rot / Weiß)</option>
+                        <option value="NO">NO (Weiß / Schwarz)</option>
+                        <option value="NC">NC (Weiß / Schwarz)</option>
+                        <option value="EA">EA (Weiß / Schwarz)</option>
+                    </select>
+                </div>
+                <div class="flex gap-4 p-1 bg-gray-100 rounded-md">
+                    <button id="lolc-modeSingle" class="flex-1 py-2 rounded font-bold transition mode-btn-active">Einzel-Modus</button>
+                    <button id="lolc-modeList" class="flex-1 py-2 rounded font-bold transition mode-btn-inactive">Listen-Modus</button>
+                </div>
+                <div id="lolc-inputSingle">
+                    <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Nummerierung</label>
+                    <input type="text" id="lolc-idInput" placeholder="bitte nummer eingeben" class="w-full p-4 border-2 rounded-md font-bold text-2xl outline-none focus:border-[#064e3b]">
+                    <div class="grid grid-cols-2 gap-4 mt-3 p-3 bg-gray-50 rounded-md border-2">
+                        <div>
+                            <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Start (1-12)</label>
+                            <input type="number" id="lolc-startPos" min="1" max="12" value="1" class="w-full p-2 border rounded font-bold outline-none focus:border-[#064e3b]">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Anzahl</label>
+                            <input type="number" id="lolc-printCount" min="1" max="12" value="12" class="w-full p-2 border rounded font-bold outline-none focus:border-[#064e3b]">
+                        </div>
+                    </div>
+                </div>
+                <div id="lolc-inputList" class="hidden">
+                    <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Nummern-Liste (max. 12)</label>
+                    <textarea id="lolc-listInput" rows="6" class="w-full p-4 border-2 rounded-md font-bold text-xl outline-none focus:border-[#064e3b] resize-none" placeholder="01-01&#10;01-02..."></textarea>
+                </div>
+                <div>
+                    <label class="flex justify-between text-sm font-bold mb-1 text-gray-600 uppercase">
+                        <span>Schriftgröße</span>
+                        <span id="lolc-fontSizeDisplay" class="font-mono text-[#064e3b]">55</span>
+                    </label>
+                    <input type="range" id="lolc-textSize" min="10" max="100" value="55" class="w-full accent-[#064e3b]">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mt-8">
+                <button id="lolc-addBtn" class="bg-gray-700 text-white py-3 rounded-md font-bold text-sm hover:bg-gray-800 transition uppercase tracking-wider">
+                    + Zum Bogen
+                </button>
+                <button id="lolc-pdfBtn" class="bg-[#064e3b] text-white py-3 rounded-md font-black text-sm hover:bg-green-800 transition uppercase tracking-wider">
+                    Bogen drucken
+                </button>
+            </div>
+
+            <div id="lolc-batchList" class="mt-4 space-y-2"></div>
+        </section>
+        <section class="flex flex-col items-center">
+            <span class="text-sm font-bold text-gray-400 mb-3 uppercase tracking-widest">Vorschau (Etikett 1)</span>
+            <div class="preview-container shadow-2xl">
+                <div id="lolc-previewCard" class="label-canvas color-lo">
+                    <span id="lolc-pText">LO-</span>
+                </div>
+            </div>
+            <p class="mt-4 text-xs text-gray-500 uppercase font-bold">Avery Zweckform L4743REV — 99,1×42,3 mm</p>
+        </section>
+    </main>
+
+    <script>
+    /* ============================================================
+       GHS DATA — wird aus separater Datei eingespielt (siehe unten)
+       ============================================================ */
+    </script>
+    <script src="ghs-data.js"></script>
+    <script>
+    /* ============================================================
+       NAVIGATION
+       ============================================================ */
+    const VIEW_TITLES = {
+        home: 'PRINTER HUB',
+        schilder: 'SCHILDER DRUCK',
+        kanister: 'KANISTER DRUCK',
+        behaelter: 'BEHÄLTER DRUCK',
+        probegross: 'PROBE GROSS DRUCK',
+        probeklein: 'PROBE KLEIN DRUCK',
+        hobbock: 'HOBBOCK DRUCK',
+        tankwagen: 'TANKWAGEN DRUCK',
+        lolc: 'LO / LC / EA DRUCK'
+    };
+
+    function showView(name) {
+        document.querySelectorAll('main[id^="view-"]').forEach(m => m.classList.add('hidden-section'));
+        const target = document.getElementById('view-' + name);
+        if (target) target.classList.remove('hidden-section');
+
+        document.getElementById('header-title').textContent = VIEW_TITLES[name] || 'PRINTER HUB';
+        const back = document.getElementById('back-btn');
+        if (name === 'home') back.classList.add('is-hidden');
+        else back.classList.remove('is-hidden');
+
+        if (location.hash !== '#' + name) {
+            history.replaceState(null, '', '#' + name);
+        }
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+
+    // Routing via hash for back/forward
+    window.addEventListener('hashchange', () => {
+        const name = (location.hash || '#home').slice(1);
+        if (VIEW_TITLES[name]) showView(name);
+    });
+
+    /* ============================================================
+       UTIL: GHS Picker Builder
+       ============================================================ */
+    function buildGhsPicker(containerId, max, onChange) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        const state = []; // Array of selected GHS ids ('001'..'009')
+        for (let i = 1; i <= 9; i++) {
+            const id = String(i).padStart(3, '0');
+            const wrapper = document.createElement('div');
+            wrapper.className = 'ghs-pick-item';
+            wrapper.dataset.ghs = id;
+            const img = document.createElement('img');
+            img.src = GHS_DATA['ghs_' + id];
+            img.alt = 'GHS ' + i;
+            wrapper.appendChild(img);
+            const lbl = document.createElement('span');
+            lbl.className = 'text-[10px] font-bold mt-1 text-gray-500';
+            lbl.textContent = 'GHS ' + i;
+            wrapper.appendChild(lbl);
+            wrapper.addEventListener('click', () => {
+                const idx = state.indexOf(id);
+                if (idx >= 0) {
+                    state.splice(idx, 1);
+                    wrapper.classList.remove('selected');
+                } else {
+                    if (state.length >= max) return;
+                    state.push(id);
+                    wrapper.classList.add('selected');
+                }
+                onChange(state.slice());
+            });
+            container.appendChild(wrapper);
+        }
+        return state;
+    }
+
+    /* ============================================================
+       UTIL: GHS Größenberechnung für eine Zeile
+       Bei wenig Symbolen: groß. Bei vielen: kleiner, damit alles passt.
+       availW = verfügbare Breite (mm oder px), n = Anzahl Symbole
+       opts: { idealSize, maxSize, minSize, gap } — Werte in gleicher Einheit
+       Rückgabe: { iconSize, gap, totalWidth, startOffset (für Zentrierung gegenüber center) }
+       ============================================================ */
+    function fitGhsRow(availW, n, opts) {
+        if (n <= 0) return { iconSize: 0, gap: 0, totalWidth: 0 };
+        const idealSize = opts.idealSize ?? 12;
+        const maxSize = opts.maxSize ?? idealSize * 1.5;
+        const minSize = opts.minSize ?? 4;
+        let gap = opts.gap ?? Math.max(1, idealSize * 0.15);
+        // Erst mit ideal probieren
+        let size = idealSize;
+        let total = n * size + (n - 1) * gap;
+        if (total <= availW) {
+            // Bei wenigen Symbolen größer machen, aber maxSize beachten
+            const possibleSize = (availW - (n - 1) * gap) / n;
+            size = Math.min(possibleSize, maxSize);
+            // Aber nicht zu krass: bei 1 Symbol ggf. nur maxSize, nicht volle Breite
+        } else {
+            // Schrumpfen
+            // Reduziere gap zuerst
+            gap = Math.max(0.5, gap * 0.5);
+            size = (availW - (n - 1) * gap) / n;
+            if (size < minSize) {
+                size = minSize;
+                gap = Math.max(0, (availW - n * size) / Math.max(1, n - 1));
+            }
+        }
+        total = n * size + (n - 1) * gap;
+        return { iconSize: size, gap: gap, totalWidth: total };
+    }
+
+    /* ============================================================
+       SCHILDER (Rohrleitung)
+       ============================================================ */
+    (function initSchilder(){
+        let selectedGhs = [];
+        const ARROWS = {
+            none: '',
+            right: '<path d="M10,40 h50 v-20 l40,30 l-40,30 v-20 h-50 z"/>',
+            left:  '<path d="M90,40 h-50 v-20 l-40,30 l40,30 v-20 h50 z"/>',
+            up:    '<path d="M40,90 v-50 h-20 l30,-40 l30,40 h-20 v50 z"/>',
+            down:  '<path d="M40,10 v50 h-20 l30,40 l30,-40 h-20 v-50 z"/>'
+        };
+
+        buildGhsPicker('sch-ghsPicker', 9, (sel) => { selectedGhs = sel; updatePreview(); });
+
+        const batch = []; // [{ config, startPos, count }, ...]
+        const batchListEl = document.getElementById('sch-batchList');
+
+        function getCurrentConfig() {
+            return {
+                subClass: document.getElementById('sch-subClass').value,
+                text: document.getElementById('sch-mainText').value || "TEXT",
+                textCase: document.getElementById('sch-textCase').value,
+                signal: document.getElementById('sch-signal').value,
+                arrow: document.getElementById('sch-arrowDir').value,
+                fontSize: parseInt(document.getElementById('sch-textSize').value) || 30,
+                ghs: selectedGhs.slice()
+            };
+        }
+
+        function applyTextCase(text, textCase) {
+            if (textCase === 'upper') return text.toUpperCase();
+            if (textCase === 'lower') return text.toLowerCase();
+            return text;
+        }
+
+        function renderBatch() {
+            batchListEl.innerHTML = '';
+            if (batch.length === 0) {
+                batchListEl.innerHTML = '<p class="text-xs text-gray-400 italic">Bogen ist leer — der Druck-Button verwendet die aktuelle Konfiguration mit Position+Anzahl.</p>';
+                return;
+            }
+            const title = document.createElement('p');
+            title.className = 'text-xs font-bold text-gray-600 uppercase mb-2';
+            title.textContent = 'Bogen-Inhalt:';
+            batchListEl.appendChild(title);
+            batch.forEach((item, i) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-2 bg-gray-50 border border-gray-200 rounded p-2 text-sm';
+                const txt = applyTextCase(item.config.text || '?', item.config.textCase);
+                const endPos = Math.min(item.startPos + item.count - 1, 12);
+                row.innerHTML = `
+                    <span class="font-bold flex-1 truncate">${txt}</span>
+                    <span class="text-xs text-gray-500 whitespace-nowrap">Pos ${item.startPos}–${endPos}</span>
+                    <button class="text-red-600 font-bold px-2 hover:bg-red-50 rounded" aria-label="Entfernen">✕</button>
+                `;
+                row.querySelector('button').onclick = () => { batch.splice(i, 1); renderBatch(); };
+                batchListEl.appendChild(row);
+            });
+        }
+
+        function updatePreview() {
+            const cfg = getCurrentConfig();
+            document.getElementById('sch-fontSizeVal').innerText = cfg.fontSize;
+            const card = document.getElementById('sch-previewCard');
+            card.className = 'label-box bg-pipe-' + cfg.subClass;
+            const text = applyTextCase(cfg.text, cfg.textCase);
+            document.getElementById('sch-pText').innerText = text;
+            document.getElementById('sch-pSignal').innerText = cfg.signal;
+            document.getElementById('sch-previewArrowSvg').innerHTML = ARROWS[cfg.arrow];
+            document.getElementById('sch-pText').style.fontSize = (cfg.fontSize / 10) + 'rem';
+
+            // Dynamische GHS-Größen in Vorschau
+            const ghsZone = document.getElementById('sch-pGhs');
+            ghsZone.innerHTML = '';
+            const n = cfg.ghs.length;
+            const availPx = ghsZone.offsetWidth || 200;
+            const fit = fitGhsRow(availPx, n, { idealSize: 30, maxSize: 44, minSize: 14, gap: 3 });
+            cfg.ghs.forEach(id => {
+                const img = document.createElement('img');
+                img.src = GHS_DATA['ghs_' + id];
+                img.style.height = fit.iconSize + 'px';
+                img.style.width = fit.iconSize + 'px';
+                img.style.objectFit = 'contain';
+                img.style.marginRight = fit.gap + 'px';
+                ghsZone.appendChild(img);
+            });
+        }
+
+        ['sch-subClass','sch-mainText','sch-textCase','sch-signal','sch-arrowDir','sch-textSize','sch-startPos','sch-printCount']
+            .forEach(id => document.getElementById(id).addEventListener('input', updatePreview));
+        window.addEventListener('resize', updatePreview);
+
+        document.getElementById('sch-addBtn').onclick = () => {
+            const startPos = parseInt(document.getElementById('sch-startPos').value) || 1;
+            const count = parseInt(document.getElementById('sch-printCount').value) || 1;
+            if (!document.getElementById('sch-mainText').value.trim()) {
+                alert('Bitte Textinhalt eingeben.'); return;
+            }
+            batch.push({ config: getCurrentConfig(), startPos, count });
+            renderBatch();
+        };
+
+        // Etikett zeichnen — wiederverwendbar
+        function drawSchild(doc, config, x, y) {
+            const colors = {
+                white:[255,255,255], yellow:[255,255,0], red:[255,0,0],
+                brown:[139,69,19], green:[0,128,0], blue:[0,0,255], violet:[128,0,128]
+            };
+            const subClass = config.subClass;
+            doc.setFillColor(...colors[subClass]);
+            doc.rect(x, y, 99.1, 42.3, 'F');
+            const isDark = !['white', 'yellow'].includes(subClass);
+            doc.setTextColor(isDark ? 255 : 0);
+
+            doc.setFontSize(config.fontSize);
+            doc.setFont("helvetica", "bold");
+            doc.text(applyTextCase(config.text, config.textCase), x + 49.5, y + 18, { align: 'center', maxWidth: 90 });
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bolditalic");
+            doc.text(config.signal, x + 65, y + 36, { align: 'center' });
+
+            // Dynamische GHS in mm: verfügbar ~ 50 mm (links der Pfeil-Zone)
+            const n = config.ghs.length;
+            if (n > 0) {
+                const availMm = 55;
+                const fit = fitGhsRow(availMm, n, { idealSize: 9, maxSize: 13, minSize: 4, gap: 1.5 });
+                let gx = x + 4;
+                const gy = y + 30 - fit.iconSize / 2 + 4.5;
+                config.ghs.forEach(id => {
+                    try { doc.addImage(GHS_DATA['ghs_' + id], 'PNG', gx, gy, fit.iconSize, fit.iconSize); } catch(e){}
+                    gx += fit.iconSize + fit.gap;
+                });
+            }
+
+            if (config.arrow !== 'none') {
+                doc.setFillColor(isDark ? 255 : 0);
+                const ax = x + 85; const ay = y + 34;
+                if (config.arrow === 'right') { doc.rect(ax-4, ay-1.5, 6, 3, 'F'); doc.triangle(ax+2, ay-4, ax+2, ay+4, ax+7, ay, 'F'); }
+                else if (config.arrow === 'left') { doc.rect(ax-2, ay-1.5, 6, 3, 'F'); doc.triangle(ax-2, ay-4, ax-2, ay+4, ax-7, ay, 'F'); }
+                else if (config.arrow === 'up') { doc.rect(ax-1.5, ay, 3, 6, 'F'); doc.triangle(ax-4, ay, ax+4, ay, ax, ay-5, 'F'); }
+                else if (config.arrow === 'down') { doc.rect(ax-1.5, ay-6, 3, 6, 'F'); doc.triangle(ax-4, ay, ax+4, ay, ax, ay+5, 'F'); }
+            }
+            doc.setTextColor(0);
+        }
+
+        document.getElementById('sch-pdfBtn').onclick = () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+            // Slot -> Config Map (12 Slots)
+            const slots = new Array(12).fill(null);
+
+            if (batch.length === 0) {
+                // Quick-Modus: aktuelle Konfig + Position+Anzahl
+                const startPos = parseInt(document.getElementById('sch-startPos').value) || 1;
+                const count = parseInt(document.getElementById('sch-printCount').value) || 12;
+                const cfg = getCurrentConfig();
+                for (let p = startPos; p < startPos + count && p <= 12; p++) {
+                    slots[p - 1] = cfg;
+                }
+            } else {
+                batch.forEach(item => {
+                    for (let p = item.startPos; p < item.startPos + item.count && p <= 12; p++) {
+                        slots[p - 1] = item.config;
+                    }
+                });
+            }
+
+            for (let i = 0; i < 12; i++) {
+                if (!slots[i]) continue;
+                const x = 6.4 + (i % 2 * 99.1);
+                const y = 21.6 + (Math.floor(i / 2) * 42.3);
+                drawSchild(doc, slots[i], x, y);
+            }
+            doc.save("Rohrleitungs_Schilder.pdf");
+        };
+
+        renderBatch();
+        updatePreview();
+    })();
+
+    /* ============================================================
+       KANISTER
+       ============================================================ */
+    (function initKanister(){
+        let selectedGhs = [];
+        buildGhsPicker('kan-ghsPicker', 9, (sel) => { selectedGhs = sel; updatePreview(); });
+
+        function updatePreview() {
+            const color = document.getElementById('kan-bgColor').value;
+            const topText = document.getElementById('kan-topText').value || "BEZEICHNUNG";
+            const signal = document.getElementById('kan-signal').value;
+            const botText = document.getElementById('kan-botText').value || "";
+            const fontSize = document.getElementById('kan-fontSize').value;
+            document.getElementById('kan-fontSizeVal').innerText = fontSize;
+
+            const card = document.getElementById('kan-previewCard');
+            card.className = 'a6-canvas bg-fill-' + color;
+            document.getElementById('kan-pTop').innerText = topText;
+            document.getElementById('kan-pSignal').innerText = signal;
+            document.getElementById('kan-pBot').innerText = botText;
+
+            const previewWidth = card.offsetWidth || 1;
+            const scaleFactor = previewWidth / 148.5;
+            document.getElementById('kan-pTop').style.fontSize = (fontSize * 0.3527 * scaleFactor) + "px";
+
+            // Dynamische GHS Größe in Vorschau
+            const ghsZone = document.getElementById('kan-pGhs');
+            ghsZone.innerHTML = '';
+            const n = selectedGhs.length;
+            const availPx = (previewWidth - 30);
+            const fit = fitGhsRow(availPx, n, { idealSize: 50, maxSize: 80, minSize: 18, gap: 6 });
+            selectedGhs.forEach(id => {
+                const img = document.createElement('img');
+                img.src = GHS_DATA['ghs_' + id];
+                img.style.height = fit.iconSize + 'px';
+                img.style.width = fit.iconSize + 'px';
+                img.style.objectFit = 'contain';
+                ghsZone.appendChild(img);
+            });
+            ghsZone.style.gap = fit.gap + 'px';
+        }
+
+        ['kan-bgColor','kan-topText','kan-signal','kan-botText','kan-fontSize']
+            .forEach(id => document.getElementById(id).addEventListener('input', updatePreview));
+        window.addEventListener('resize', updatePreview);
+
+        document.getElementById('kan-pdfBtn').onclick = () => {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: 'l', unit: 'mm', format: 'a4' });
+                const color = document.getElementById('kan-bgColor').value;
+                const topText = document.getElementById('kan-topText').value;
+                const signal = document.getElementById('kan-signal').value;
+                const botText = document.getElementById('kan-botText').value;
+                const fontSize = parseInt(document.getElementById('kan-fontSize').value);
+                const colors = {
+                    white:[255,255,255], yellow:[253,224,71], red:[239,68,68],
+                    brown:[120,53,15], green:[34,197,94], blue:[59,130,246], violet:[168,85,247]
+                };
+                const isDark = ['red', 'blue', 'brown', 'violet'].includes(color);
+                const textColor = isDark ? 255 : 0;
+
+                for (let i = 0; i < 4; i++) {
+                    const x = (i % 2) * 148.5;
+                    const y = Math.floor(i / 2) * 105;
+                    const cx = x + 74.25;
+                    doc.setFillColor(...colors[color]);
+                    doc.rect(x, y, 148.5, 105, 'F');
+                    doc.setTextColor(textColor);
+                    doc.setFontSize(fontSize);
+                    doc.setFont("helvetica", "bold");
+                    doc.text(topText.toUpperCase(), cx, y + 35, { align: 'center', maxWidth: 135 });
+
+                    // Dynamische GHS Größen — verfügbar ~120 mm (Innenabstand)
+                    const n = selectedGhs.length;
+                    if (n > 0) {
+                        const fit = fitGhsRow(120, n, { idealSize: 14, maxSize: 22, minSize: 7, gap: 3 });
+                        const totalW = fit.totalWidth;
+                        let gx = cx - totalW / 2;
+                        const gy = y + 47 - fit.iconSize / 2;
+                        selectedGhs.forEach(id => {
+                            doc.addImage(GHS_DATA['ghs_' + id], 'PNG', gx, gy, fit.iconSize, fit.iconSize);
+                            gx += fit.iconSize + fit.gap;
+                        });
+                    }
+
+                    if (signal) {
+                        doc.setFontSize(20); doc.setFont("helvetica", "bolditalic");
+                        doc.text(signal, cx, y + 70, { align: 'center' });
+                    }
+                    if (botText) {
+                        doc.setFontSize(14); doc.setFont("helvetica", "bold");
+                        doc.text(botText, cx, y + 88, { align: 'center', maxWidth: 135 });
+                    }
+                }
+                doc.save("Kanister_Labels.pdf");
+            } catch (error) {
+                alert("Fehler beim Drucken.");
+                console.error(error);
+            }
+        };
+
+        updatePreview();
+    })();
+
+    /* ============================================================
+       BEHÄLTER
+       ============================================================ */
+    (function initBehaelter(){
+        let selectedGhs = [];
+        buildGhsPicker('beh-ghsPicker', 9, (sel) => { selectedGhs = sel; updatePreview(); });
+
+        function updatePreview() {
+            let plant = document.getElementById('beh-plantPart').value || "ANLAGENTEIL";
+            let substance = document.getElementById('beh-substanceName').value || "STOFFNAME";
+            const tCase = document.getElementById('beh-textCase').value;
+            const signal = document.getElementById('beh-signal').value;
+            const pSize = document.getElementById('beh-plantSize').value;
+            const sSize = document.getElementById('beh-substanceSize').value;
+            document.getElementById('beh-plantSizeDisplay').innerText = pSize;
+            document.getElementById('beh-substanceSizeDisplay').innerText = sSize;
+            if (tCase === 'upper') { plant = plant.toUpperCase(); substance = substance.toUpperCase(); }
+
+            const previewWidth = document.getElementById('beh-previewCard').offsetWidth || 1;
+            const scaleFactor = previewWidth / 297;
+            const ptToMm = 0.3527;
+            const pEl = document.getElementById('beh-pPlant');
+            pEl.innerText = plant;
+            pEl.style.fontSize = (pSize * ptToMm * scaleFactor) + "px";
+            const sEl = document.getElementById('beh-pSubstance');
+            sEl.innerText = substance;
+            sEl.style.fontSize = (sSize * ptToMm * scaleFactor) + "px";
+            const sigEl = document.getElementById('beh-pSignal');
+            sigEl.innerText = signal;
+            sigEl.style.fontSize = (30 * ptToMm * scaleFactor) + "px";
+
+            // Dynamische GHS Größen in Vorschau
+            const ghsZone = document.getElementById('beh-pGhs');
+            ghsZone.innerHTML = '';
+            const n = selectedGhs.length;
+            const availPx = previewWidth * 0.85;
+            const fit = fitGhsRow(availPx, n, { idealSize: 80, maxSize: 130, minSize: 25, gap: 8 });
+            selectedGhs.forEach(id => {
+                const img = document.createElement('img');
+                img.src = GHS_DATA['ghs_' + id];
+                img.style.height = fit.iconSize + 'px';
+                img.style.width = fit.iconSize + 'px';
+                img.style.objectFit = 'contain';
+                img.style.maxHeight = '100%';
+                ghsZone.appendChild(img);
+            });
+            ghsZone.style.gap = fit.gap + 'px';
+        }
+
+        ['beh-plantPart','beh-substanceName','beh-textCase','beh-signal','beh-plantSize','beh-substanceSize']
+            .forEach(id => document.getElementById(id).addEventListener('input', updatePreview));
+        window.addEventListener('resize', updatePreview);
+
+        document.getElementById('beh-pdfBtn').onclick = () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'l', unit: 'mm', format: 'a4' });
+            let plant = document.getElementById('beh-plantPart').value || "";
+            let substance = document.getElementById('beh-substanceName').value || "";
+            const tCase = document.getElementById('beh-textCase').value;
+            const signal = document.getElementById('beh-signal').value;
+            const pSize = parseInt(document.getElementById('beh-plantSize').value);
+            const sSize = parseInt(document.getElementById('beh-substanceSize').value);
+            if (tCase === 'upper') { plant = plant.toUpperCase(); substance = substance.toUpperCase(); }
+
+            const midX = 148.5;
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(pSize);
+            doc.text(plant, midX, 35, { align: 'center', baseline: 'middle', maxWidth: 280 });
+            doc.setFontSize(sSize);
+            doc.text(substance, midX, 105, { align: 'center', baseline: 'middle', maxWidth: 280 });
+
+            // Dynamische GHS — verfügbar 250 mm
+            const n = selectedGhs.length;
+            if (n > 0) {
+                const fit = fitGhsRow(250, n, { idealSize: 35, maxSize: 60, minSize: 15, gap: 6 });
+                let gx = midX - fit.totalWidth / 2;
+                const gy = 145;
+                selectedGhs.forEach(id => {
+                    doc.addImage(GHS_DATA['ghs_' + id], 'PNG', gx, gy, fit.iconSize, fit.iconSize);
+                    gx += fit.iconSize + fit.gap;
+                });
+            }
+            if (signal) {
+                doc.setFontSize(32);
+                doc.setFont("helvetica", "bolditalic");
+                doc.text(signal, midX, 198, { align: 'center', baseline: 'middle' });
+            }
+            doc.save(`Behaelter_${plant || 'Label'}.pdf`);
+        };
+
+        updatePreview();
+    })();
+
+    /* ============================================================
+       PROBE GROSS — mit beschrifteten Zeilen
+       ============================================================ */
+    (function initProbeGross(){
+        let selectedGhs = [];
+        buildGhsPicker('pg-ghsPicker', 9, (sel) => { selectedGhs = sel; updatePreview(); });
+
+        function getCurrentConfig() {
+            return {
+                substance: document.getElementById('pg-substance').value,
+                location: document.getElementById('pg-location').value,
+                sampler: document.getElementById('pg-sampler').value,
+                textCase: document.getElementById('pg-textCase').value,
+                signal: document.getElementById('pg-signal').value,
+                sSize: parseInt(document.getElementById('pg-substanceSize').value) || 14,
+                lSize: parseInt(document.getElementById('pg-locationSize').value) || 11,
+                mSize: parseInt(document.getElementById('pg-samplerSize').value) || 10,
+                ghs: selectedGhs.slice()
+            };
+        }
+
+        function applyTextCase(text, tc) {
+            if (tc === 'upper') return (text || '').toUpperCase();
+            return text || '';
+        }
+
+        const batch = [];
+        const batchListEl = document.getElementById('pg-batchList');
+
+        function renderBatch() {
+            batchListEl.innerHTML = '';
+            if (batch.length === 0) {
+                batchListEl.innerHTML = '<p class="text-xs text-gray-400 italic">Bogen ist leer — der Druck-Button verwendet die aktuelle Konfiguration mit Position+Anzahl.</p>';
+                return;
+            }
+            const title = document.createElement('p');
+            title.className = 'text-xs font-bold text-gray-600 uppercase mb-2';
+            title.textContent = 'Bogen-Inhalt:';
+            batchListEl.appendChild(title);
+            batch.forEach((item, i) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-2 bg-gray-50 border border-gray-200 rounded p-2 text-sm';
+                const txt = applyTextCase(item.config.substance || '?', item.config.textCase);
+                const endPos = Math.min(item.startPos + item.count - 1, 12);
+                row.innerHTML = `
+                    <span class="font-bold flex-1 truncate">${txt}</span>
+                    <span class="text-xs text-gray-500 whitespace-nowrap">Pos ${item.startPos}–${endPos}</span>
+                    <button class="text-red-600 font-bold px-2 hover:bg-red-50 rounded" aria-label="Entfernen">✕</button>
+                `;
+                row.querySelector('button').onclick = () => { batch.splice(i, 1); renderBatch(); };
+                batchListEl.appendChild(row);
+            });
+        }
+
+        function updatePreview() {
+            const cfg = getCurrentConfig();
+            const sub = applyTextCase(cfg.substance || "STOFFNAME", cfg.textCase);
+            const loc = applyTextCase(cfg.location || "PROBENAHMESTELLE", cfg.textCase);
+            const smp = applyTextCase(cfg.sampler || "PROBENEHMER", cfg.textCase);
+
+            const previewWidth = document.getElementById('pg-previewCard').offsetWidth || 1;
+            const scale = previewWidth / 99.1;
+            const ptToPx = 0.3527 * scale;
+
+            const pSub = document.getElementById('pg-pSubstance');
+            pSub.innerText = sub;
+            pSub.style.fontSize = (cfg.sSize * ptToPx) + "px";
+            const pLoc = document.getElementById('pg-pLocation');
+            pLoc.innerText = loc;
+            pLoc.style.fontSize = (cfg.lSize * ptToPx) + "px";
+            const pSmp = document.getElementById('pg-pSampler');
+            pSmp.innerText = smp;
+            pSmp.style.fontSize = (cfg.mSize * ptToPx) + "px";
+
+            document.getElementById('pg-pSignal').innerText = cfg.signal;
+
+            // Dynamische GHS Größen in Vorschau
+            const ghsZone = document.getElementById('pg-pGhs');
+            ghsZone.innerHTML = '';
+            const n = cfg.ghs.length;
+            const availPx = previewWidth * 0.55;
+            const fit = fitGhsRow(availPx, n, { idealSize: 30, maxSize: 42, minSize: 14, gap: 4 });
+            cfg.ghs.forEach(id => {
+                const img = document.createElement('img');
+                img.src = GHS_DATA['ghs_' + id];
+                img.style.height = fit.iconSize + 'px';
+                img.style.width = fit.iconSize + 'px';
+                img.style.objectFit = 'contain';
+                ghsZone.appendChild(img);
+            });
+            ghsZone.style.gap = fit.gap + 'px';
+        }
+
+        ['pg-substance','pg-substanceSize','pg-location','pg-locationSize','pg-sampler','pg-samplerSize','pg-signal','pg-textCase']
+            .forEach(id => document.getElementById(id).addEventListener('input', updatePreview));
+        window.addEventListener('resize', updatePreview);
+
+        document.getElementById('pg-addBtn').onclick = () => {
+            const startPos = parseInt(document.getElementById('pg-startPos').value) || 1;
+            const count = parseInt(document.getElementById('pg-printCount').value) || 1;
+            if (!document.getElementById('pg-substance').value.trim()) {
+                alert('Bitte mindestens den Stoffnamen eingeben.'); return;
+            }
+            batch.push({ config: getCurrentConfig(), startPos, count });
+            renderBatch();
+        };
+
+        function drawProbeGross(doc, cfg, x, y) {
+            const labelW = 99.1;
+            const labelInsetX = 4;
+            const labelTextStart = labelInsetX + 26;
+
+            const sub = applyTextCase(cfg.substance || '', cfg.textCase);
+            const loc = applyTextCase(cfg.location || '', cfg.textCase);
+            const smp = applyTextCase(cfg.sampler || '', cfg.textCase);
+
+            const drawLabel = (txt, yPos) => {
+                doc.setFontSize(6);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(80,80,80);
+                doc.text(txt, x + labelInsetX, yPos, { align: 'left', baseline: 'middle' });
+                doc.setTextColor(0,0,0);
+            };
+
+            drawLabel("STOFF:", y + 5.5);
+            doc.setFontSize(cfg.sSize);
+            doc.setFont("helvetica", "bold");
+            doc.text(sub, x + labelTextStart, y + 5.5, {
+                align: 'left', baseline: 'middle',
+                maxWidth: labelW - labelTextStart - labelInsetX
+            });
+
+            drawLabel("P.-STELLE:", y + 14);
+            doc.setFontSize(cfg.lSize);
+            doc.setFont("helvetica", "bold");
+            doc.text(loc, x + labelTextStart, y + 14, {
+                align: 'left', baseline: 'middle',
+                maxWidth: labelW - labelTextStart - labelInsetX
+            });
+
+            drawLabel("PROBENEHMER:", y + 22);
+            doc.setFontSize(cfg.mSize);
+            doc.setFont("helvetica", "bold");
+            doc.text(smp, x + labelTextStart, y + 22, {
+                align: 'left', baseline: 'middle',
+                maxWidth: labelW - labelTextStart - 30
+            });
+            doc.setFontSize(7);
+            doc.setFont("helvetica", "normal");
+            doc.text("Datum: __________", x + labelW - labelInsetX, y + 22, { align: 'right', baseline: 'middle' });
+
+            // Dynamische GHS — verfügbar ~70 mm (links neben Signal)
+            const n = cfg.ghs.length;
+            if (n > 0) {
+                const availMm = cfg.signal ? 65 : 90;
+                const fit = fitGhsRow(availMm, n, { idealSize: 8, maxSize: 11, minSize: 4, gap: 1.5 });
+                let gx = x + labelInsetX;
+                const gy = y + 33 - fit.iconSize / 2;
+                cfg.ghs.forEach(id => {
+                    doc.addImage(GHS_DATA['ghs_' + id], 'PNG', gx, gy, fit.iconSize, fit.iconSize);
+                    gx += fit.iconSize + fit.gap;
+                });
+            }
+            if (cfg.signal) {
+                doc.setFontSize(8);
+                doc.setFont("helvetica", "bolditalic");
+                doc.text(cfg.signal, x + labelW - labelInsetX, y + 37, { align: 'right', baseline: 'middle' });
+            }
+        }
+
+        document.getElementById('pg-pdfBtn').onclick = () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+            const labelW = 99.1, labelH = 42.3;
+            const leftMargin = 5.9, topMargin = 21.6;
+            const slots = new Array(12).fill(null);
+
+            if (batch.length === 0) {
+                const startPos = parseInt(document.getElementById('pg-startPos').value) || 1;
+                const count = parseInt(document.getElementById('pg-printCount').value) || 12;
+                const cfg = getCurrentConfig();
+                for (let p = startPos; p < startPos + count && p <= 12; p++) slots[p - 1] = cfg;
+            } else {
+                batch.forEach(item => {
+                    for (let p = item.startPos; p < item.startPos + item.count && p <= 12; p++) slots[p - 1] = item.config;
+                });
+            }
+
+            for (let i = 0; i < 12; i++) {
+                if (!slots[i]) continue;
+                const x = leftMargin + ((i % 2) * labelW);
+                const y = topMargin + (Math.floor(i / 2) * labelH);
+                drawProbeGross(doc, slots[i], x, y);
+            }
+            doc.save(`Probegross_Bogen.pdf`);
+        };
+
+        renderBatch();
+        updatePreview();
+    })();
+
+    /* ============================================================
+       PROBE KLEIN
+       ============================================================ */
+    (function initProbeKlein(){
+        let selectedGhs = [];
+        buildGhsPicker('pk-ghsPicker', 9, (sel) => { selectedGhs = sel; updatePreview(); });
+
+        function getCurrentConfig() {
+            return {
+                substance: document.getElementById('pk-substanceName').value,
+                textCase: document.getElementById('pk-textCase').value,
+                signal: document.getElementById('pk-signal').value,
+                ghs: selectedGhs.slice()
+            };
+        }
+
+        function applyTextCase(text, tc) {
+            if (tc === 'upper') return (text || '').toUpperCase();
+            return text || '';
+        }
+
+        const batch = [];
+        const batchListEl = document.getElementById('pk-batchList');
+
+        function renderBatch() {
+            batchListEl.innerHTML = '';
+            if (batch.length === 0) {
+                batchListEl.innerHTML = '<p class="text-xs text-gray-400 italic">Bogen ist leer — der Druck-Button verwendet die aktuelle Konfiguration mit Position+Anzahl.</p>';
+                return;
+            }
+            const title = document.createElement('p');
+            title.className = 'text-xs font-bold text-gray-600 uppercase mb-2';
+            title.textContent = 'Bogen-Inhalt:';
+            batchListEl.appendChild(title);
+            batch.forEach((item, i) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-2 bg-gray-50 border border-gray-200 rounded p-2 text-sm';
+                const txt = applyTextCase(item.config.substance || '?', item.config.textCase);
+                const endPos = Math.min(item.startPos + item.count - 1, 80);
+                row.innerHTML = `
+                    <span class="font-bold flex-1 truncate">${txt}</span>
+                    <span class="text-xs text-gray-500 whitespace-nowrap">Pos ${item.startPos}–${endPos}</span>
+                    <button class="text-red-600 font-bold px-2 hover:bg-red-50 rounded">✕</button>
+                `;
+                row.querySelector('button').onclick = () => { batch.splice(i, 1); renderBatch(); };
+                batchListEl.appendChild(row);
+            });
+        }
+
+        function updatePreview() {
+            const cfg = getCurrentConfig();
+            const sub = applyTextCase(cfg.substance || "STOFFNAME", cfg.textCase);
+            document.getElementById('pk-pSubstance').innerText = sub;
+            document.getElementById('pk-pSignal').innerText = cfg.signal;
+
+            // Dynamische GHS Größen in Vorschau
+            const ghsZone = document.getElementById('pk-pGhs');
+            ghsZone.innerHTML = '';
+            const n = cfg.ghs.length;
+            // Verfügbar ~210px (60% von 356px)
+            const availPx = 210;
+            const fit = fitGhsRow(availPx, n, { idealSize: 24, maxSize: 38, minSize: 13, gap: 2 });
+            cfg.ghs.forEach(id => {
+                const img = document.createElement('img');
+                img.src = GHS_DATA['ghs_' + id];
+                img.style.height = fit.iconSize + 'px';
+                img.style.width = fit.iconSize + 'px';
+                img.style.objectFit = 'contain';
+                ghsZone.appendChild(img);
+            });
+            ghsZone.style.gap = fit.gap + 'px';
+        }
+
+        ['pk-substanceName','pk-textCase','pk-signal']
+            .forEach(id => document.getElementById(id).addEventListener('input', updatePreview));
+
+        document.getElementById('pk-addBtn').onclick = () => {
+            const startPos = parseInt(document.getElementById('pk-startPos').value) || 1;
+            const count = parseInt(document.getElementById('pk-printCount').value) || 1;
+            if (!document.getElementById('pk-substanceName').value.trim()) {
+                alert('Bitte Stoffnamen eingeben.'); return;
+            }
+            batch.push({ config: getCurrentConfig(), startPos, count });
+            renderBatch();
+        };
+
+        function drawProbeKlein(doc, cfg, x, y, labelW) {
+            const sub = applyTextCase(cfg.substance || '', cfg.textCase);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(sub.length > 20 ? 7 : 9);
+            doc.text(sub, x + (labelW/2), y + 5, { align: 'center', maxWidth: labelW - 4 });
+
+            // Dynamische GHS — verfügbar ~21 mm (links unten)
+            const n = cfg.ghs.length;
+            if (n > 0) {
+                const availMm = 21;
+                const fit = fitGhsRow(availMm, n, { idealSize: 4.5, maxSize: 6.5, minSize: 2.0, gap: 0.4 });
+                let gx = x + 1.5;
+                const gy = y + 9;
+                cfg.ghs.forEach(id => {
+                    doc.addImage(GHS_DATA['ghs_' + id], 'PNG', gx, gy, fit.iconSize, fit.iconSize);
+                    gx += fit.iconSize + fit.gap;
+                });
+            }
+            if (cfg.signal) {
+                doc.setFontSize(5);
+                doc.setFont("helvetica", "bolditalic");
+                doc.text(cfg.signal, x + 2, y + 15.5);
+            }
+            doc.setFontSize(5);
+            doc.setFont("helvetica", "normal");
+            doc.text("Datum:", x + labelW - 12, y + 13.5);
+            doc.line(x + labelW - 12, y + 15.5, x + labelW - 2, y + 15.5);
+        }
+
+        document.getElementById('pk-pdfBtn').onclick = () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+            const labelW = 35.6, labelH = 16.9;
+            const leftMargin = 13.0, topMargin = 13.0;
+            const hGap = 2.5, vGap = 0;
+            const cols = 5, rows = 16;
+            const slots = new Array(80).fill(null);
+
+            if (batch.length === 0) {
+                const startPos = parseInt(document.getElementById('pk-startPos').value) || 1;
+                const count = parseInt(document.getElementById('pk-printCount').value) || 80;
+                const cfg = getCurrentConfig();
+                for (let p = startPos; p < startPos + count && p <= 80; p++) slots[p - 1] = cfg;
+            } else {
+                batch.forEach(item => {
+                    for (let p = item.startPos; p < item.startPos + item.count && p <= 80; p++) slots[p - 1] = item.config;
+                });
+            }
+
+            for (let i = 0; i < 80; i++) {
+                if (!slots[i]) continue;
+                const r = Math.floor(i / cols);
+                const c = i % cols;
+                const x = leftMargin + (c * (labelW + hGap));
+                const y = topMargin + (r * (labelH + vGap));
+                drawProbeKlein(doc, slots[i], x, y, labelW);
+            }
+            doc.save("Probeklein_Bogen.pdf");
+        };
+
+        renderBatch();
+        updatePreview();
+    })();
+
+    /* ============================================================
+       HOBBOCK
+       ============================================================ */
+    (function initHobbock(){
+        let selectedGhs = [];
+        buildGhsPicker('hob-ghsPicker', 9, (sel) => { selectedGhs = sel; updatePreview(); });
+
+        function updatePreview() {
+            const color = document.getElementById('hob-bgColor').value;
+            const topText = document.getElementById('hob-topText').value || "NUMMER";
+            const signal = document.getElementById('hob-signal').value;
+            const botText = document.getElementById('hob-botText').value || "";
+            const fontSize = document.getElementById('hob-fontSize').value;
+            document.getElementById('hob-fontSizeVal').innerText = fontSize;
+
+            const card = document.getElementById('hob-previewCard');
+            card.className = 'a6-canvas bg-fill-' + color;
+            document.getElementById('hob-pTop').innerText = topText;
+            document.getElementById('hob-pSignal').innerText = signal;
+            document.getElementById('hob-pBot').innerText = botText;
+
+            const previewWidth = card.offsetWidth || 1;
+            const scaleFactor = previewWidth / 148.5;
+            document.getElementById('hob-pTop').style.fontSize = (fontSize * 0.3527 * scaleFactor) + "px";
+
+            // Dynamische GHS Größen in Vorschau
+            const ghsZone = document.getElementById('hob-pGhs');
+            ghsZone.innerHTML = '';
+            const n = selectedGhs.length;
+            const availPx = previewWidth - 30;
+            const fit = fitGhsRow(availPx, n, { idealSize: 50, maxSize: 80, minSize: 18, gap: 6 });
+            selectedGhs.forEach(id => {
+                const img = document.createElement('img');
+                img.src = GHS_DATA['ghs_' + id];
+                img.style.height = fit.iconSize + 'px';
+                img.style.width = fit.iconSize + 'px';
+                img.style.objectFit = 'contain';
+                ghsZone.appendChild(img);
+            });
+            ghsZone.style.gap = fit.gap + 'px';
+        }
+
+        ['hob-bgColor','hob-topText','hob-signal','hob-botText','hob-fontSize']
+            .forEach(id => document.getElementById(id).addEventListener('input', updatePreview));
+        window.addEventListener('resize', updatePreview);
+
+        document.getElementById('hob-pdfBtn').onclick = () => {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: 'l', unit: 'mm', format: 'a4' });
+                const color = document.getElementById('hob-bgColor').value;
+                const topText = document.getElementById('hob-topText').value;
+                const signal = document.getElementById('hob-signal').value;
+                const botText = document.getElementById('hob-botText').value;
+                const fontSize = parseInt(document.getElementById('hob-fontSize').value);
+                const colors = {
+                    white:[255,255,255], yellow:[253,224,71], red:[239,68,68],
+                    brown:[120,53,15], green:[34,197,94], blue:[59,130,246], violet:[168,85,247]
+                };
+                const isDark = ['red', 'blue', 'brown', 'violet'].includes(color);
+                const textColor = isDark ? 255 : 0;
+
+                for (let i = 0; i < 4; i++) {
+                    const x = (i % 2) * 148.5;
+                    const y = Math.floor(i / 2) * 105;
+                    const cx = x + 74.25;
+                    doc.setFillColor(...colors[color]);
+                    doc.rect(x, y, 148.5, 105, 'F');
+                    doc.setTextColor(textColor);
+                    doc.setFontSize(fontSize);
+                    doc.setFont("helvetica", "bold");
+                    doc.text(topText.toUpperCase(), cx, y + 35, { align: 'center', maxWidth: 135 });
+
+                    // Dynamische GHS — verfügbar 120 mm
+                    const n = selectedGhs.length;
+                    if (n > 0) {
+                        const fit = fitGhsRow(120, n, { idealSize: 14, maxSize: 22, minSize: 7, gap: 3 });
+                        let gx = cx - fit.totalWidth / 2;
+                        const gy = y + 47 - fit.iconSize / 2;
+                        selectedGhs.forEach(id => {
+                            doc.addImage(GHS_DATA['ghs_' + id], 'PNG', gx, gy, fit.iconSize, fit.iconSize);
+                            gx += fit.iconSize + fit.gap;
+                        });
+                    }
+                    if (signal) {
+                        doc.setFontSize(20); doc.setFont("helvetica", "bolditalic");
+                        doc.text(signal, cx, y + 70, { align: 'center' });
+                    }
+                    if (botText) {
+                        doc.setFontSize(14); doc.setFont("helvetica", "bold");
+                        doc.text(botText, cx, y + 88, { align: 'center', maxWidth: 135 });
+                    }
+                }
+                doc.save("Hobbock_Labels.pdf");
+            } catch (error) {
+                alert("Fehler beim Drucken.");
+                console.error(error);
+            }
+        };
+
+        updatePreview();
+    })();
+
+    /* ============================================================
+       TANKWAGEN
+       ============================================================ */
+    (function initTankwagen(){
+        let selectedGhs = [];
+        buildGhsPicker('tw-ghsPicker', 9, (sel) => { selectedGhs = sel; updatePreview(); });
+
+        function updatePreview() {
+            const cont = document.getElementById('tw-containerNo').value || "CONTAINER / TANKWAGEN-NR.";
+            let sub = document.getElementById('tw-substanceName').value || "STOFFNAME";
+            const sig = document.getElementById('tw-signal').value;
+            const size = document.getElementById('tw-substanceSize').value;
+            const bet = document.getElementById('tw-betrieb').value || "Betrieb";
+            const abt = document.getElementById('tw-abteilung').value || "Abteilung";
+            const fir = document.getElementById('tw-firma').value || "Firma";
+            const adr = document.getElementById('tw-adresse').value || "Adresse";
+            document.getElementById('tw-substanceSizeDisplay').innerText = size;
+
+            const previewWidth = document.getElementById('tw-previewCard').offsetWidth || 1;
+            const scale = previewWidth / 297;
+
+            const contEl = document.getElementById('tw-pContainer');
+            contEl.innerText = cont.toUpperCase();
+            // Container ist schmaler als Stoff: ca. 35% der Stoffgröße, max 26pt
+            const contPt = Math.min(Math.max(size * 0.35, 14), 26);
+            contEl.style.fontSize = (contPt * 0.3527 * scale) + "px";
+
+            const subEl = document.getElementById('tw-pSubstance');
+            subEl.innerText = sub.toUpperCase();
+            subEl.style.fontSize = (size * 0.3527 * scale) + "px";
+
+            document.getElementById('tw-pSignal').innerText = sig;
+            document.getElementById('tw-pBetrieb').innerText = bet;
+            document.getElementById('tw-pAbteilung').innerText = abt;
+            document.getElementById('tw-pFirma').innerText = fir;
+            document.getElementById('tw-pAdresse').innerText = adr;
+
+            // Dynamische GHS Größen in Vorschau
+            const ghsZone = document.getElementById('tw-pGhs');
+            ghsZone.innerHTML = '';
+            const n = selectedGhs.length;
+            const availPx = previewWidth * (sig ? 0.55 : 0.85);
+            const fit = fitGhsRow(availPx, n, { idealSize: 50, maxSize: 80, minSize: 18, gap: 8 });
+            selectedGhs.forEach(id => {
+                const img = document.createElement('img');
+                img.src = GHS_DATA['ghs_' + id];
+                img.style.height = fit.iconSize + 'px';
+                img.style.width = fit.iconSize + 'px';
+                img.style.objectFit = 'contain';
+                ghsZone.appendChild(img);
+            });
+            ghsZone.style.gap = fit.gap + 'px';
+        }
+
+        ['tw-containerNo','tw-substanceName','tw-signal','tw-substanceSize','tw-betrieb','tw-abteilung','tw-firma','tw-adresse']
+            .forEach(id => document.getElementById(id).addEventListener('input', updatePreview));
+        window.addEventListener('resize', updatePreview);
+
+        document.getElementById('tw-pdfBtn').onclick = () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'l', unit: 'mm', format: 'a4' });
+            const cont = (document.getElementById('tw-containerNo').value || "").toUpperCase();
+            const sub = (document.getElementById('tw-substanceName').value || "STOFFNAME").toUpperCase();
+            const sig = document.getElementById('tw-signal').value;
+            const size = parseInt(document.getElementById('tw-substanceSize').value);
+            const bet = document.getElementById('tw-betrieb').value;
+            const abt = document.getElementById('tw-abteilung').value;
+            const fir = document.getElementById('tw-firma').value;
+            const adr = document.getElementById('tw-adresse').value;
+
+            // Container-Nummer ganz oben — schmaler als Stoff
+            if (cont) {
+                const contSize = Math.min(Math.max(size * 0.35, 14), 26);
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(contSize);
+                doc.setTextColor(60, 60, 60);
+                doc.text(cont, 148.5, 22, { align: 'center', baseline: 'middle', maxWidth: 270 });
+                doc.setTextColor(0, 0, 0);
+            }
+
+            // Stoffname (zentriert vertikal in 30..115mm)
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(size);
+            const splitSub = doc.splitTextToSize(sub, 270);
+            const lineHeightMm = (size * 0.3527) * 1.15;
+            const totalHeight = splitSub.length * lineHeightMm;
+            const subBlockTop = 35;
+            const subBlockBot = 120;
+            const subCenterY = (subBlockTop + subBlockBot) / 2;
+            const startY = subCenterY - (totalHeight / 2) + (lineHeightMm / 2);
+            doc.text(splitSub, 148.5, startY, { align: 'center', baseline: 'middle' });
+
+            // Dynamische GHS Größen — verfügbar 240 mm (oder 180 wenn Signal)
+            const n = selectedGhs.length;
+            const ghsAvailMm = sig ? 180 : 240;
+            const fit = fitGhsRow(ghsAvailMm, n, { idealSize: 25, maxSize: 38, minSize: 12, gap: 5 });
+            const ghsCenterY = 155;
+            let gx = 148.5 - fit.totalWidth / 2;
+            if (sig) gx -= 20;
+            const gy = ghsCenterY - fit.iconSize / 2;
+            selectedGhs.forEach(id => {
+                doc.addImage(GHS_DATA['ghs_' + id], 'PNG', gx, gy, fit.iconSize, fit.iconSize);
+                gx += fit.iconSize + fit.gap;
+            });
+            if (sig) {
+                doc.setFontSize(30);
+                doc.setFont("helvetica", "bolditalic");
+                doc.text(sig, gx + 10, ghsCenterY, { baseline: 'middle' });
+            }
+
+            // Fußzeile
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(22);
+            doc.text(`${bet || ''} | ${abt || ''}`, 20, 198, { baseline: 'middle' });
+            doc.setFontSize(22);
+            doc.text(fir || '', 277, 193, { align: 'right', baseline: 'middle' });
+            doc.setFontSize(16);
+            doc.text(adr || '', 277, 203, { align: 'right', baseline: 'middle' });
+
+            doc.save("Tankwagen_Label.pdf");
+        };
+
+        updatePreview();
+    })();
+
+    /* ============================================================
+       LO/LC & EA
+       ============================================================ */
+    (function initLolc(){
+        let currentMode = 'single';
+        const btnSingle = document.getElementById('lolc-modeSingle');
+        const btnList = document.getElementById('lolc-modeList');
+        const divSingle = document.getElementById('lolc-inputSingle');
+        const divList = document.getElementById('lolc-inputList');
+
+        const COLORS = {
+            LO: { bg: [34,197,94], text: [0,0,0] },
+            LC: { bg: [239,68,68], text: [255,255,255] },
+            NO: { bg: [255,255,255], text: [0,0,0] },
+            NC: { bg: [255,255,255], text: [0,0,0] },
+            EA: { bg: [255,255,255], text: [0,0,0] }
+        };
+
+        const batch = []; // [{statusType, value, startPos, count, textSize}]
+        const batchListEl = document.getElementById('lolc-batchList');
+
+        function renderBatch() {
+            batchListEl.innerHTML = '';
+            if (batch.length === 0) {
+                batchListEl.innerHTML = '<p class="text-xs text-gray-400 italic">Bogen ist leer — der Druck-Button verwendet die aktuelle Konfiguration.</p>';
+                return;
+            }
+            const title = document.createElement('p');
+            title.className = 'text-xs font-bold text-gray-600 uppercase mb-2';
+            title.textContent = 'Bogen-Inhalt:';
+            batchListEl.appendChild(title);
+            batch.forEach((item, i) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-2 bg-gray-50 border border-gray-200 rounded p-2 text-sm';
+                const endPos = Math.min(item.startPos + item.count - 1, 12);
+                row.innerHTML = `
+                    <span class="font-bold flex-1 truncate">${item.statusType}-${item.value || '?'}</span>
+                    <span class="text-xs text-gray-500 whitespace-nowrap">Pos ${item.startPos}–${endPos}</span>
+                    <button class="text-red-600 font-bold px-2 hover:bg-red-50 rounded">✕</button>
+                `;
+                row.querySelector('button').onclick = () => { batch.splice(i, 1); renderBatch(); };
+                batchListEl.appendChild(row);
+            });
+        }
+
+        btnSingle.onclick = () => {
+            currentMode = 'single';
+            btnSingle.className = "flex-1 py-2 rounded font-bold transition mode-btn-active";
+            btnList.className = "flex-1 py-2 rounded font-bold transition mode-btn-inactive";
+            divSingle.classList.remove('hidden');
+            divList.classList.add('hidden');
+            updatePreview();
+        };
+        btnList.onclick = () => {
+            currentMode = 'list';
+            btnList.className = "flex-1 py-2 rounded font-bold transition mode-btn-active";
+            btnSingle.className = "flex-1 py-2 rounded font-bold transition mode-btn-inactive";
+            divList.classList.remove('hidden');
+            divSingle.classList.add('hidden');
+            updatePreview();
+        };
+
+        function updatePreview() {
+            const statusType = document.getElementById('lolc-statusType').value;
+            const textSize = document.getElementById('lolc-textSize').value;
+            document.getElementById('lolc-fontSizeDisplay').innerText = textSize;
+            let displayNum = "";
+            if (currentMode === 'single') {
+                displayNum = document.getElementById('lolc-idInput').value;
+            } else {
+                const lines = document.getElementById('lolc-listInput').value.split('\n');
+                displayNum = lines[0] || "";
+            }
+            const pCard = document.getElementById('lolc-previewCard');
+            const pText = document.getElementById('lolc-pText');
+            pText.innerText = `${statusType}-${displayNum}`;
+            pCard.className = "label-canvas";
+            if (statusType === "LO") pCard.classList.add("color-lo");
+            else if (statusType === "LC") pCard.classList.add("color-lc");
+            else if (statusType === "NO") pCard.classList.add("color-no");
+            else if (statusType === "NC") pCard.classList.add("color-nc");
+            else if (statusType === "EA") pCard.classList.add("color-ea");
+
+            const previewWidth = pCard.offsetWidth || 1;
+            const scaleFactor = previewWidth / 99.1;
+            pText.style.fontSize = (textSize * 0.3527 * scaleFactor) + "px";
+        }
+
+        ['lolc-statusType','lolc-textSize','lolc-idInput','lolc-listInput','lolc-startPos','lolc-printCount']
+            .forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('input', updatePreview); });
+        window.addEventListener('resize', updatePreview);
+
+        document.getElementById('lolc-addBtn').onclick = () => {
+            if (currentMode !== 'single') {
+                alert('Bogen-Modus funktioniert nur im Einzel-Modus. Im Listen-Modus wird die Liste direkt gedruckt.');
+                return;
+            }
+            const startPos = parseInt(document.getElementById('lolc-startPos').value) || 1;
+            const count = parseInt(document.getElementById('lolc-printCount').value) || 1;
+            const statusType = document.getElementById('lolc-statusType').value;
+            const value = document.getElementById('lolc-idInput').value;
+            const textSize = parseInt(document.getElementById('lolc-textSize').value) || 55;
+            batch.push({ statusType, value, startPos, count, textSize });
+            renderBatch();
+        };
+
+        function drawLolc(doc, statusType, fullText, textSize, x, y) {
+            const labelW = 99.1, labelH = 42.3;
+            const cfg = COLORS[statusType];
+            doc.setFillColor(cfg.bg[0], cfg.bg[1], cfg.bg[2]);
+            doc.rect(x, y, labelW, labelH, 'F');
+            doc.setTextColor(cfg.text[0], cfg.text[1], cfg.text[2]);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(textSize * 1.8);
+            doc.text(fullText, x + (labelW / 2), y + (labelH / 2), { align: 'center', baseline: 'middle' });
+            doc.setTextColor(0,0,0);
+        }
+
+        document.getElementById('lolc-pdfBtn').onclick = () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+            const labelW = 99.1, labelH = 42.3;
+            const leftMargin = 6.4, topMargin = 21.6;
+
+            // slot[i] = { statusType, value, textSize } | null
+            const slots = new Array(12).fill(null);
+
+            if (batch.length === 0) {
+                if (currentMode === 'list') {
+                    const statusType = document.getElementById('lolc-statusType').value;
+                    const textSize = parseInt(document.getElementById('lolc-textSize').value);
+                    const lines = document.getElementById('lolc-listInput').value.split('\n');
+                    for (let i = 0; i < 12; i++) {
+                        slots[i] = { statusType, value: lines[i] || '', textSize };
+                    }
+                } else {
+                    const startPos = parseInt(document.getElementById('lolc-startPos').value) || 1;
+                    const count = parseInt(document.getElementById('lolc-printCount').value) || 12;
+                    const statusType = document.getElementById('lolc-statusType').value;
+                    const value = document.getElementById('lolc-idInput').value;
+                    const textSize = parseInt(document.getElementById('lolc-textSize').value);
+                    for (let p = startPos; p < startPos + count && p <= 12; p++) {
+                        slots[p - 1] = { statusType, value, textSize };
+                    }
+                }
+            } else {
+                batch.forEach(item => {
+                    for (let p = item.startPos; p < item.startPos + item.count && p <= 12; p++) {
+                        slots[p - 1] = { statusType: item.statusType, value: item.value, textSize: item.textSize };
+                    }
+                });
+            }
+
+            for (let i = 0; i < 12; i++) {
+                if (!slots[i]) continue;
+                const col = i % 2, row = Math.floor(i / 2);
+                const x = leftMargin + (col * labelW);
+                const y = topMargin + (row * labelH);
+                const fullText = `${slots[i].statusType}-${slots[i].value}`;
+                drawLolc(doc, slots[i].statusType, fullText, slots[i].textSize, x, y);
+            }
+            doc.save(`LOLC_Bogen.pdf`);
+        };
+
+        renderBatch();
+        updatePreview();
+    })();
+
+    /* ============================================================
+       ON-SCREEN KEYBOARD (Dashboard-Modus)
+       ============================================================ */
+    (function initOSK(){
+        const KBD_KEY = 'printerhub-kbd-mode'; // 'system' | 'onscreen'
+        let mode = localStorage.getItem(KBD_KEY) || 'system';
+        let activeInput = null;
+        let shift = false;
+        let capsLock = false;
+
+        const oskEl = document.getElementById('osk');
+        const oskKeysEl = document.getElementById('osk-keys');
+        const oskTargetLabel = document.getElementById('osk-target-label');
+        const toggleBtn = document.getElementById('kbd-toggle');
+        const toggleLabel = document.getElementById('kbd-toggle-label');
+
+        // QWERTZ deutsch — vier Reihen
+        const ROWS_LOWER = [
+            ['1','2','3','4','5','6','7','8','9','0','ß','´'],
+            ['q','w','e','r','t','z','u','i','o','p','ü','+'],
+            ['a','s','d','f','g','h','j','k','l','ö','ä','#'],
+            ['<','y','x','c','v','b','n','m',',','.','-']
+        ];
+        const ROWS_UPPER = [
+            ['!','"','§','$','%','&','/','(',')','=','?','`'],
+            ['Q','W','E','R','T','Z','U','I','O','P','Ü','*'],
+            ['A','S','D','F','G','H','J','K','L','Ö','Ä',"'"],
+            ['>','Y','X','C','V','B','N','M',';',':','_']
+        ];
+
+        function buildKeys() {
+            oskKeysEl.innerHTML = '';
+            const rows = (shift !== capsLock) ? ROWS_UPPER : ROWS_LOWER;
+            rows.forEach((row, rowIdx) => {
+                const r = document.createElement('div');
+                r.className = 'osk-row';
+                if (rowIdx === 3) {
+                    // Vor letzter Buchstabenreihe: Shift
+                    const shiftKey = document.createElement('button');
+                    shiftKey.type = 'button';
+                    shiftKey.className = 'osk-key osk-mod osk-wide' + (shift ? ' osk-active' : '');
+                    shiftKey.textContent = '⇧ Shift';
+                    shiftKey.addEventListener('mousedown', e => e.preventDefault());
+                    shiftKey.addEventListener('click', () => { shift = !shift; buildKeys(); });
+                    r.appendChild(shiftKey);
+                }
+                row.forEach(k => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'osk-key';
+                    btn.textContent = k;
+                    btn.addEventListener('mousedown', e => e.preventDefault());
+                    btn.addEventListener('click', () => insertText(k));
+                    r.appendChild(btn);
+                });
+                if (rowIdx === 3) {
+                    const back = document.createElement('button');
+                    back.type = 'button';
+                    back.className = 'osk-key osk-back osk-wide';
+                    back.textContent = '⌫';
+                    back.addEventListener('mousedown', e => e.preventDefault());
+                    back.addEventListener('click', backspace);
+                    r.appendChild(back);
+                }
+                oskKeysEl.appendChild(r);
+            });
+            // Letzte Reihe: Caps, Space, Enter, Schließen
+            const last = document.createElement('div');
+            last.className = 'osk-row';
+            const caps = document.createElement('button');
+            caps.type = 'button';
+            caps.className = 'osk-key osk-mod osk-wide' + (capsLock ? ' osk-active' : '');
+            caps.textContent = 'Caps';
+            caps.addEventListener('mousedown', e => e.preventDefault());
+            caps.addEventListener('click', () => { capsLock = !capsLock; buildKeys(); });
+            last.appendChild(caps);
+
+            const space = document.createElement('button');
+            space.type = 'button';
+            space.className = 'osk-key osk-space';
+            space.textContent = 'Leertaste';
+            space.addEventListener('mousedown', e => e.preventDefault());
+            space.addEventListener('click', () => insertText(' '));
+            last.appendChild(space);
+
+            const enter = document.createElement('button');
+            enter.type = 'button';
+            enter.className = 'osk-key osk-action osk-wider';
+            enter.textContent = '⏎ Enter';
+            enter.addEventListener('mousedown', e => e.preventDefault());
+            enter.addEventListener('click', () => {
+                if (activeInput && activeInput.tagName === 'TEXTAREA') insertText('\n');
+                else hideOsk(true);
+            });
+            last.appendChild(enter);
+
+            oskKeysEl.appendChild(last);
+        }
+
+        function insertText(t) {
+            if (!activeInput) return;
+            const el = activeInput;
+            const start = el.selectionStart, end = el.selectionEnd;
+            const val = el.value;
+            el.value = val.slice(0, start) + t + val.slice(end);
+            const newPos = start + t.length;
+            el.selectionStart = el.selectionEnd = newPos;
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            if (shift) { shift = false; buildKeys(); }
+        }
+
+        function backspace() {
+            if (!activeInput) return;
+            const el = activeInput;
+            const start = el.selectionStart, end = el.selectionEnd;
+            const val = el.value;
+            if (start === end && start > 0) {
+                el.value = val.slice(0, start - 1) + val.slice(end);
+                el.selectionStart = el.selectionEnd = start - 1;
+            } else {
+                el.value = val.slice(0, start) + val.slice(end);
+                el.selectionStart = el.selectionEnd = start;
+            }
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        function showOsk(input) {
+            activeInput = input;
+            oskTargetLabel.textContent = input.placeholder || input.previousElementSibling?.textContent?.trim() || 'Eingabe';
+            // Markierung
+            document.querySelectorAll('.osk-target-input').forEach(e => e.classList.remove('osk-target-input'));
+            input.classList.add('osk-target-input');
+            shift = false;
+            buildKeys();
+            oskEl.classList.remove('hidden');
+            oskEl.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('osk-open');
+            // Sicherstellen dass das Feld sichtbar ist
+            setTimeout(() => {
+                try { input.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch(e) {}
+            }, 50);
+        }
+
+        window.hideOsk = function(blur) {
+            oskEl.classList.add('hidden');
+            oskEl.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('osk-open');
+            if (activeInput) {
+                activeInput.classList.remove('osk-target-input');
+                if (blur) activeInput.blur();
+            }
+            activeInput = null;
+        };
+
+        function shouldUseOSK(el) {
+            if (mode !== 'onscreen') return false;
+            if (!el || !el.tagName) return false;
+            if (el.tagName === 'TEXTAREA') return true;
+            if (el.tagName === 'INPUT') {
+                const t = (el.type || 'text').toLowerCase();
+                return ['text','search','tel','email','url','password','number'].includes(t);
+            }
+            return false;
+        }
+
+        // Globale Listener
+        document.addEventListener('focusin', e => {
+            const el = e.target;
+            if (shouldUseOSK(el)) {
+                // System-Tastatur unterdrücken
+                el.setAttribute('inputmode', 'none');
+                showOsk(el);
+            }
+        });
+
+        document.addEventListener('mousedown', e => {
+            // Klick außerhalb von Input und außerhalb der OSK -> schließen
+            if (!activeInput) return;
+            const t = e.target;
+            if (oskEl.contains(t)) return;
+            if (t === activeInput) return;
+            if (shouldUseOSK(t)) return; // wechseln statt schließen
+            hideOsk(true);
+        }, true);
+
+        // Mode-Toggle
+        function applyMode() {
+            const inputs = document.querySelectorAll('input, textarea');
+            if (mode === 'onscreen') {
+                inputs.forEach(el => {
+                    if (shouldUseOSK(el)) el.setAttribute('inputmode', 'none');
+                });
+                toggleLabel.textContent = 'Dashboard';
+                toggleBtn.title = 'Eingabemodus: Bildschirmtastatur (klicken um zu wechseln)';
+            } else {
+                inputs.forEach(el => el.removeAttribute('inputmode'));
+                hideOsk(true);
+                toggleLabel.textContent = 'Tastatur';
+                toggleBtn.title = 'Eingabemodus: System-Tastatur (klicken um zu wechseln)';
+            }
+        }
+
+        window.toggleKeyboardMode = function() {
+            mode = (mode === 'system') ? 'onscreen' : 'system';
+            localStorage.setItem(KBD_KEY, mode);
+            applyMode();
+        };
+
+        // Initial anwenden — sofort wenn DOM schon ready, sonst auf DOMContentLoaded warten
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', applyMode);
+        } else {
+            applyMode();
+        }
+    })();
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const initial = (location.hash || '#home').slice(1);
+        showView(VIEW_TITLES[initial] ? initial : 'home');
+    });
+    </script>
+</body>
+</html>
