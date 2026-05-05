@@ -299,6 +299,67 @@
         .hidden-section { display: none; }
         .is-hidden { display: none !important; }
 
+        /* === Print Confirm Modal === */
+        .print-modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.55);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 100; padding: 16px;
+            -webkit-backdrop-filter: blur(2px);
+            backdrop-filter: blur(2px);
+        }
+        .print-modal-overlay.active { display: flex; }
+        .print-modal-box {
+            background: #fff; max-width: 440px; width: 100%;
+            border-radius: 14px; box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: pmFadeIn 0.18s ease-out;
+        }
+        @keyframes pmFadeIn { from { opacity:0; transform: translateY(8px) } to { opacity:1; transform: translateY(0) } }
+        .print-modal-header {
+            background: #064e3b;
+            color: #fff; padding: 16px 20px;
+            font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;
+            font-size: 1.05rem;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .print-modal-icon { font-size: 1.4rem; }
+        .print-modal-body { padding: 22px 20px; }
+        .print-modal-paper {
+            background: #fef3c7; border: 2px solid #f59e0b; border-radius: 10px;
+            padding: 14px 16px; margin-bottom: 16px;
+        }
+        .print-modal-paper-title {
+            font-weight: 900; text-transform: uppercase; font-size: 0.75rem;
+            color: #92400e; letter-spacing: 0.06em; margin-bottom: 4px;
+        }
+        .print-modal-paper-text {
+            font-weight: 700; color: #1f2937; font-size: 1rem; line-height: 1.35;
+        }
+        .print-modal-instruction {
+            color: #4b5563; font-size: 0.9rem; line-height: 1.5;
+        }
+        .print-modal-actions {
+            display: flex; gap: 10px;
+            padding: 0 20px 20px;
+        }
+        .print-modal-btn {
+            flex: 1; padding: 14px 16px;
+            border-radius: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;
+            font-size: 0.85rem; cursor: pointer; border: none;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .print-modal-btn:active { transform: scale(0.98); }
+        .print-modal-btn-cancel {
+            background: #e5e7eb; color: #374151;
+        }
+        .print-modal-btn-cancel:hover { background: #d1d5db; }
+        .print-modal-btn-confirm {
+            background: #064e3b; color: #fff;
+        }
+        .print-modal-btn-confirm:hover { background: #0a6249; }
+
         /* === ON-SCREEN KEYBOARD === */
         #kbd-toggle.kbd-active {
             background: #fff;
@@ -407,6 +468,30 @@
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 min-h-screen">
+
+    <!-- PRINT CONFIRM MODAL -->
+    <div id="print-modal" class="print-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="print-modal-title">
+        <div class="print-modal-box">
+            <div class="print-modal-header">
+                <span class="print-modal-icon">🖨️</span>
+                <span id="print-modal-title">Vor dem Drucken</span>
+            </div>
+            <div class="print-modal-body">
+                <div class="print-modal-paper">
+                    <div class="print-modal-paper-title">📄 Bitte einlegen:</div>
+                    <div id="print-modal-paper-text" class="print-modal-paper-text">A4 Papier</div>
+                </div>
+                <p class="print-modal-instruction">
+                    Nach dem Klick auf <strong>„PDF erstellen"</strong> wird die Datei heruntergeladen.
+                    PDF öffnen und drucken — am besten in der Drucker-Einstellung „<strong>Tatsächliche Größe</strong>" / „<strong>100 %</strong>" wählen (nicht „An Seite anpassen").
+                </p>
+            </div>
+            <div class="print-modal-actions">
+                <button type="button" class="print-modal-btn print-modal-btn-cancel" onclick="closePrintModal()">Abbrechen</button>
+                <button type="button" id="print-modal-confirm" class="print-modal-btn print-modal-btn-confirm">PDF erstellen</button>
+            </div>
+        </div>
+    </div>
 
     <!-- HEADER -->
     <header class="bg-[#064e3b] p-5 shadow-md sticky top-0 z-50">
@@ -612,9 +697,9 @@
                 <div>
                     <label class="flex justify-between text-sm font-bold mb-1 text-gray-600 uppercase">
                         <span>Schriftgröße (Oben)</span>
-                        <span id="kan-fontSizeVal" class="text-[#064e3b]">40</span>
+                        <span id="kan-fontSizeVal" class="text-[#064e3b]">32</span>
                     </label>
-                    <input type="range" id="kan-fontSize" min="20" max="100" value="40" class="w-full accent-[#064e3b]">
+                    <input type="range" id="kan-fontSize" min="20" max="100" value="32" class="w-full accent-[#064e3b]">
                 </div>
                 <div>
                     <label class="block text-sm font-bold mb-2 text-gray-600 uppercase">Mitte (GHS Symbole)</label>
@@ -662,16 +747,16 @@
                     <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">1. Anlagenteil (Oben)</label>
                     <input type="text" id="beh-plantPart" maxlength="30" class="w-full p-3 border-2 rounded-md font-bold mb-3 outline-none focus:border-[#064e3b]" placeholder="z.B. A-101">
                     <div class="flex items-center gap-4">
-                        <input type="range" id="beh-plantSize" min="30" max="150" value="80" class="flex-1 accent-[#064e3b]">
-                        <span id="beh-plantSizeDisplay" class="font-mono font-bold w-10">80</span>
+                        <input type="range" id="beh-plantSize" min="30" max="150" value="65" class="flex-1 accent-[#064e3b]">
+                        <span id="beh-plantSizeDisplay" class="font-mono font-bold w-10">65</span>
                     </div>
                 </div>
                 <div class="p-4 bg-gray-50 rounded-md border border-gray-200">
                     <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">2. Stoffname (Mitte)</label>
                     <input type="text" id="beh-substanceName" maxlength="60" class="w-full p-3 border-2 rounded-md font-bold mb-3 outline-none focus:border-[#064e3b]" placeholder="z.B. NATRONLAUGE 50%">
                     <div class="flex items-center gap-4">
-                        <input type="range" id="beh-substanceSize" min="20" max="100" value="50" class="flex-1 accent-[#064e3b]">
-                        <span id="beh-substanceSizeDisplay" class="font-mono font-bold w-10">50</span>
+                        <input type="range" id="beh-substanceSize" min="20" max="100" value="42" class="flex-1 accent-[#064e3b]">
+                        <span id="beh-substanceSizeDisplay" class="font-mono font-bold w-10">42</span>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
@@ -917,9 +1002,9 @@
                 <div>
                     <label class="flex justify-between text-sm font-bold mb-1 text-gray-600 uppercase">
                         <span>Schriftgröße (Oben)</span>
-                        <span id="hob-fontSizeVal" class="text-[#064e3b]">40</span>
+                        <span id="hob-fontSizeVal" class="text-[#064e3b]">32</span>
                     </label>
-                    <input type="range" id="hob-fontSize" min="20" max="100" value="40" class="w-full accent-[#064e3b]">
+                    <input type="range" id="hob-fontSize" min="20" max="100" value="32" class="w-full accent-[#064e3b]">
                 </div>
                 <div>
                     <label class="block text-sm font-bold mb-2 text-gray-600 uppercase">2. Mitte (GHS Symbole, Max. 9)</label>
@@ -971,8 +1056,8 @@
                     <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Stoffname (Mehrzeilig möglich)</label>
                     <textarea id="tw-substanceName" rows="2" class="w-full p-3 border-2 rounded-md font-bold mb-3 outline-none focus:border-[#064e3b] resize-none" placeholder="z.B. NATRONLAUGE&#10;50%"></textarea>
                     <div class="flex items-center gap-4">
-                        <input type="range" id="tw-substanceSize" min="10" max="250" value="90" class="flex-1 accent-[#064e3b]">
-                        <span id="tw-substanceSizeDisplay" class="font-mono font-bold w-10 text-[#064e3b]">90</span>
+                        <input type="range" id="tw-substanceSize" min="10" max="250" value="70" class="flex-1 accent-[#064e3b]">
+                        <span id="tw-substanceSizeDisplay" class="font-mono font-bold w-10 text-[#064e3b]">70</span>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
@@ -1118,6 +1203,12 @@
     };
 
     function showView(name) {
+        // Vor dem Wechsel: Sofort an den Anfang scrollen (System-Scroll-Restoration zu Fall bringen)
+        if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+
         document.querySelectorAll('main[id^="view-"]').forEach(m => m.classList.add('hidden-section'));
         const target = document.getElementById('view-' + name);
         if (target) target.classList.remove('hidden-section');
@@ -1131,19 +1222,20 @@
             history.replaceState(null, '', '#' + name);
         }
 
-        // Dreifach abgesichert — deckt iOS Safari, Android Chrome und Desktop ab
-        const scrollToTop = () => {
+        // Nach Layout-Wechsel: erneut scrollen — mehrfach abgesichert
+        const hardScrollTop = () => {
             window.scrollTo(0, 0);
             document.documentElement.scrollTop = 0;
             document.body.scrollTop = 0;
+            // Force layout flush, damit der Browser den Scroll wirklich annimmt
+            void document.body.offsetHeight;
         };
-        scrollToTop();
-        requestAnimationFrame(() => {
-            scrollToTop();
-            requestAnimationFrame(scrollToTop);
-        });
-        // Zusätzlich: nach 80ms nochmal (für langsame Geräte und iOS Safari)
-        setTimeout(scrollToTop, 80);
+        hardScrollTop();
+        requestAnimationFrame(hardScrollTop);
+        setTimeout(hardScrollTop, 0);
+        setTimeout(hardScrollTop, 50);
+        setTimeout(hardScrollTop, 150);
+        setTimeout(hardScrollTop, 300);
     }
 
     // Routing via hash for back/forward
@@ -1223,6 +1315,41 @@
         total = n * size + (n - 1) * gap;
         return { iconSize: size, gap: gap, totalWidth: total };
     }
+
+    /* ============================================================
+       UTIL: Druck-Bestätigungs-Modal
+       Aufruf: confirmPrint('A4 Papier', () => { ...PDF erzeugen und speichern... })
+       ============================================================ */
+    let _pendingPrintAction = null;
+    function confirmPrint(papierHinweis, action) {
+        _pendingPrintAction = action;
+        document.getElementById('print-modal-paper-text').textContent = papierHinweis;
+        const modal = document.getElementById('print-modal');
+        modal.classList.add('active');
+        // Beim Modal-Öffnen Fokus auf den Bestätigungsbutton (Tastatur-Bedienung)
+        setTimeout(() => document.getElementById('print-modal-confirm').focus(), 50);
+    }
+    function closePrintModal() {
+        document.getElementById('print-modal').classList.remove('active');
+        _pendingPrintAction = null;
+    }
+    document.getElementById('print-modal-confirm').addEventListener('click', () => {
+        const action = _pendingPrintAction;
+        closePrintModal();
+        if (typeof action === 'function') {
+            try { action(); } catch (e) { console.error(e); alert('Fehler beim Erzeugen des PDF.'); }
+        }
+    });
+    // Klick außerhalb des Modal-Box → abbrechen
+    document.getElementById('print-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('print-modal')) closePrintModal();
+    });
+    // Escape → abbrechen
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && document.getElementById('print-modal').classList.contains('active')) {
+            closePrintModal();
+        }
+    });
 
     /* ============================================================
        SCHILDER (Rohrleitung)
@@ -1372,6 +1499,7 @@
         }
 
         document.getElementById('sch-pdfBtn').onclick = () => {
+          confirmPrint('Avery L4743REV (12 Etiketten / A4)', () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
@@ -1401,6 +1529,7 @@
                 drawSchild(doc, slots[i], x, y);
             }
             doc.save("Rohrleitungs_Schilder.pdf");
+          });
         };
 
         renderBatch();
@@ -1454,6 +1583,7 @@
         window.addEventListener('resize', updatePreview);
 
         document.getElementById('kan-pdfBtn').onclick = () => {
+          confirmPrint('A4 Papier (4× A6 Schilder pro Blatt) — Querformat', () => {
             try {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF({ orientation: 'l', unit: 'mm', format: 'a4' });
@@ -1478,15 +1608,15 @@
                     doc.setTextColor(textColor);
                     doc.setFontSize(fontSize);
                     doc.setFont("helvetica", "bold");
-                    doc.text(topText.toUpperCase(), cx, y + 35, { align: 'center', maxWidth: 135 });
+                    doc.text(topText.toUpperCase(), cx, y + 32, { align: 'center', maxWidth: 135 });
 
                     // Dynamische GHS Größen — verfügbar ~120 mm (Innenabstand)
                     const n = selectedGhs.length;
                     if (n > 0) {
-                        const fit = fitGhsRow(120, n, { idealSize: 14, maxSize: 22, minSize: 7, gap: 3 });
+                        const fit = fitGhsRow(120, n, { idealSize: 14, maxSize: 20, minSize: 7, gap: 3 });
                         const totalW = fit.totalWidth;
                         let gx = cx - totalW / 2;
-                        const gy = y + 47 - fit.iconSize / 2;
+                        const gy = y + 50 - fit.iconSize / 2;
                         selectedGhs.forEach(id => {
                             doc.addImage(GHS_DATA['ghs_' + id], 'PNG', gx, gy, fit.iconSize, fit.iconSize);
                             gx += fit.iconSize + fit.gap;
@@ -1494,12 +1624,12 @@
                     }
 
                     if (signal) {
-                        doc.setFontSize(20); doc.setFont("helvetica", "bolditalic");
-                        doc.text(signal, cx, y + 70, { align: 'center' });
+                        doc.setFontSize(14); doc.setFont("helvetica", "bolditalic");
+                        doc.text(signal, cx, y + 75, { align: 'center' });
                     }
                     if (botText) {
-                        doc.setFontSize(14); doc.setFont("helvetica", "bold");
-                        doc.text(botText, cx, y + 88, { align: 'center', maxWidth: 135 });
+                        doc.setFontSize(12); doc.setFont("helvetica", "bold");
+                        doc.text(botText, cx, y + 90, { align: 'center', maxWidth: 135 });
                     }
                 }
                 doc.save("Kanister_Labels.pdf");
@@ -1507,6 +1637,7 @@
                 alert("Fehler beim Drucken.");
                 console.error(error);
             }
+          });
         };
 
         updatePreview();
@@ -1566,6 +1697,7 @@
         window.addEventListener('resize', updatePreview);
 
         document.getElementById('beh-pdfBtn').onclick = () => {
+          confirmPrint('A4 Papier — Querformat', () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'l', unit: 'mm', format: 'a4' });
             let plant = document.getElementById('beh-plantPart').value || "";
@@ -1581,25 +1713,26 @@
             doc.setFontSize(pSize);
             doc.text(plant, midX, 35, { align: 'center', baseline: 'middle', maxWidth: 280 });
             doc.setFontSize(sSize);
-            doc.text(substance, midX, 105, { align: 'center', baseline: 'middle', maxWidth: 280 });
+            doc.text(substance, midX, 95, { align: 'center', baseline: 'middle', maxWidth: 280 });
 
             // Dynamische GHS — verfügbar 250 mm
             const n = selectedGhs.length;
             if (n > 0) {
-                const fit = fitGhsRow(250, n, { idealSize: 35, maxSize: 60, minSize: 15, gap: 6 });
+                const fit = fitGhsRow(250, n, { idealSize: 32, maxSize: 50, minSize: 14, gap: 6 });
                 let gx = midX - fit.totalWidth / 2;
-                const gy = 145;
+                const gy = 140;
                 selectedGhs.forEach(id => {
                     doc.addImage(GHS_DATA['ghs_' + id], 'PNG', gx, gy, fit.iconSize, fit.iconSize);
                     gx += fit.iconSize + fit.gap;
                 });
             }
             if (signal) {
-                doc.setFontSize(32);
+                doc.setFontSize(22);
                 doc.setFont("helvetica", "bolditalic");
-                doc.text(signal, midX, 198, { align: 'center', baseline: 'middle' });
+                doc.text(signal, midX, 200, { align: 'center', baseline: 'middle' });
             }
             doc.save(`Behaelter_${plant || 'Label'}.pdf`);
+          });
         };
 
         updatePreview();
@@ -1769,13 +1902,14 @@
                 });
             }
             if (cfg.signal) {
-                doc.setFontSize(8);
+                doc.setFontSize(7);
                 doc.setFont("helvetica", "bolditalic");
-                doc.text(cfg.signal, x + labelW - labelInsetX, y + 37, { align: 'right', baseline: 'middle' });
+                doc.text(cfg.signal, x + labelW - labelInsetX, y + 39, { align: 'right', baseline: 'middle' });
             }
         }
 
         document.getElementById('pg-pdfBtn').onclick = () => {
+          confirmPrint('Avery L4743REV (12 Etiketten / A4)', () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
             const labelW = 99.1, labelH = 42.3;
@@ -1800,6 +1934,7 @@
                 drawProbeGross(doc, slots[i], x, y);
             }
             doc.save(`Probegross_Bogen.pdf`);
+          });
         };
 
         renderBatch();
@@ -1922,6 +2057,7 @@
         }
 
         document.getElementById('pk-pdfBtn').onclick = () => {
+          confirmPrint('Avery L4732REV (80 Etiketten / A4)', () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
             const labelW = 35.6, labelH = 16.9;
@@ -1950,6 +2086,7 @@
                 drawProbeKlein(doc, slots[i], x, y, labelW);
             }
             doc.save("Probeklein_Bogen.pdf");
+          });
         };
 
         renderBatch();
@@ -2003,6 +2140,7 @@
         window.addEventListener('resize', updatePreview);
 
         document.getElementById('hob-pdfBtn').onclick = () => {
+          confirmPrint('A4 Papier (4× A6 Schilder pro Blatt) — Querformat', () => {
             try {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF({ orientation: 'l', unit: 'mm', format: 'a4' });
@@ -2027,26 +2165,26 @@
                     doc.setTextColor(textColor);
                     doc.setFontSize(fontSize);
                     doc.setFont("helvetica", "bold");
-                    doc.text(topText.toUpperCase(), cx, y + 35, { align: 'center', maxWidth: 135 });
+                    doc.text(topText.toUpperCase(), cx, y + 32, { align: 'center', maxWidth: 135 });
 
                     // Dynamische GHS — verfügbar 120 mm
                     const n = selectedGhs.length;
                     if (n > 0) {
-                        const fit = fitGhsRow(120, n, { idealSize: 14, maxSize: 22, minSize: 7, gap: 3 });
+                        const fit = fitGhsRow(120, n, { idealSize: 14, maxSize: 20, minSize: 7, gap: 3 });
                         let gx = cx - fit.totalWidth / 2;
-                        const gy = y + 47 - fit.iconSize / 2;
+                        const gy = y + 50 - fit.iconSize / 2;
                         selectedGhs.forEach(id => {
                             doc.addImage(GHS_DATA['ghs_' + id], 'PNG', gx, gy, fit.iconSize, fit.iconSize);
                             gx += fit.iconSize + fit.gap;
                         });
                     }
                     if (signal) {
-                        doc.setFontSize(20); doc.setFont("helvetica", "bolditalic");
-                        doc.text(signal, cx, y + 70, { align: 'center' });
+                        doc.setFontSize(14); doc.setFont("helvetica", "bolditalic");
+                        doc.text(signal, cx, y + 75, { align: 'center' });
                     }
                     if (botText) {
-                        doc.setFontSize(14); doc.setFont("helvetica", "bold");
-                        doc.text(botText, cx, y + 88, { align: 'center', maxWidth: 135 });
+                        doc.setFontSize(12); doc.setFont("helvetica", "bold");
+                        doc.text(botText, cx, y + 90, { align: 'center', maxWidth: 135 });
                     }
                 }
                 doc.save("Hobbock_Labels.pdf");
@@ -2054,6 +2192,7 @@
                 alert("Fehler beim Drucken.");
                 console.error(error);
             }
+          });
         };
 
         updatePreview();
@@ -2118,6 +2257,7 @@
         window.addEventListener('resize', updatePreview);
 
         document.getElementById('tw-pdfBtn').onclick = () => {
+          confirmPrint('A4 Papier — Querformat', () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'l', unit: 'mm', format: 'a4' });
             const cont = (document.getElementById('tw-containerNo').value || "").toUpperCase();
@@ -2146,7 +2286,7 @@
             const lineHeightMm = (size * 0.3527) * 1.15;
             const totalHeight = splitSub.length * lineHeightMm;
             const subBlockTop = 35;
-            const subBlockBot = 120;
+            const subBlockBot = 115;
             const subCenterY = (subBlockTop + subBlockBot) / 2;
             const startY = subCenterY - (totalHeight / 2) + (lineHeightMm / 2);
             doc.text(splitSub, 148.5, startY, { align: 'center', baseline: 'middle' });
@@ -2154,31 +2294,32 @@
             // Dynamische GHS Größen — verfügbar 240 mm (oder 180 wenn Signal)
             const n = selectedGhs.length;
             const ghsAvailMm = sig ? 180 : 240;
-            const fit = fitGhsRow(ghsAvailMm, n, { idealSize: 25, maxSize: 38, minSize: 12, gap: 5 });
+            const fit = fitGhsRow(ghsAvailMm, n, { idealSize: 22, maxSize: 32, minSize: 12, gap: 5 });
             const ghsCenterY = 155;
             let gx = 148.5 - fit.totalWidth / 2;
-            if (sig) gx -= 20;
+            if (sig) gx -= 18;
             const gy = ghsCenterY - fit.iconSize / 2;
             selectedGhs.forEach(id => {
                 doc.addImage(GHS_DATA['ghs_' + id], 'PNG', gx, gy, fit.iconSize, fit.iconSize);
                 gx += fit.iconSize + fit.gap;
             });
             if (sig) {
-                doc.setFontSize(30);
+                doc.setFontSize(20);
                 doc.setFont("helvetica", "bolditalic");
-                doc.text(sig, gx + 10, ghsCenterY, { baseline: 'middle' });
+                doc.text(sig, gx + 12, ghsCenterY, { baseline: 'middle' });
             }
 
             // Fußzeile
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(22);
-            doc.text(`${bet || ''} | ${abt || ''}`, 20, 198, { baseline: 'middle' });
-            doc.setFontSize(22);
-            doc.text(fir || '', 277, 193, { align: 'right', baseline: 'middle' });
             doc.setFontSize(16);
+            doc.text(`${bet || ''} | ${abt || ''}`, 20, 198, { baseline: 'middle' });
+            doc.setFontSize(16);
+            doc.text(fir || '', 277, 195, { align: 'right', baseline: 'middle' });
+            doc.setFontSize(12);
             doc.text(adr || '', 277, 203, { align: 'right', baseline: 'middle' });
 
             doc.save("Tankwagen_Label.pdf");
+          });
         };
 
         updatePreview();
@@ -2303,6 +2444,7 @@
         }
 
         document.getElementById('lolc-pdfBtn').onclick = () => {
+          confirmPrint('Avery L4743REV (12 Etiketten / A4)', () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
             const labelW = 99.1, labelH = 42.3;
@@ -2346,6 +2488,7 @@
                 drawLolc(doc, slots[i].statusType, fullText, slots[i].textSize, x, y);
             }
             doc.save(`LOLC_Bogen.pdf`);
+          });
         };
 
         renderBatch();
