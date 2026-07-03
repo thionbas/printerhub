@@ -1,0 +1,3 @@
+Nun erstelle im Menü eine weitere Kachel und nenne es Etiketten
+Hier soll der User das Format frei entschieden können. Also a4 quer oder 4x a6 auf dem a4 Blatt oder 2x quer auf dem a4 Blatt (a5) oder auch a3 Blatt.
+Hierbei sollen die ghs Symbole ganz unten sein und mittig zentriert. Das Gefahrenwort mittig unten drunter. Ansonsten eine Zeile im oberen Drittel mit freier Textgestaltung (Größe) sowie im mittleren Drittel freie Textgestaltung. Im unteren Drittel dann ghs Symbole mit gefahrensymbol. Setze den Etiketten Editor an die zweite Stelle nach rohrleitungsschilder. Das Bild hat den Dateinamen IMG_5746.png 
