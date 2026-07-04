@@ -141,6 +141,34 @@
         #view-schilder .sch-slot .slot-ghs { display:flex; gap:1px; margin-top:2px; }
         #view-schilder .sch-slot .slot-ghs img { width:9px; height:9px; object-fit:contain; }
         #view-schilder .sch-slot.empty .slot-inner { color:#cbd5e1; font-size:16px; font-weight:300; }
+        /* ===== LO/LC/EA Bogen-Übersicht (A4) ===== */
+        #view-lolc .lolc-sheet {
+            width:100%; max-width:360px; margin:0 auto; aspect-ratio:210 / 297;
+            background:#fff; border:1px solid #cbd5e1; box-shadow:0 4px 16px rgba(0,0,0,0.12);
+            padding:7.27% 2.81%; box-sizing:border-box;
+            display:grid; grid-template-columns:1fr 1fr; grid-template-rows:repeat(6,1fr); gap:0;
+        }
+        #view-lolc .lolc-slot {
+            position:relative; border:2px solid transparent; box-sizing:border-box;
+            cursor:pointer; overflow:hidden; display:flex; flex-direction:column;
+            transition:box-shadow .12s;
+        }
+        #view-lolc .lolc-slot:hover { box-shadow:inset 0 0 0 2px #94a3b8; }
+        #view-lolc .lolc-slot.selected { border-color:#064e3b; box-shadow:inset 0 0 0 1px #064e3b; }
+        #view-lolc .lolc-slot .slot-num {
+            position:absolute; top:2px; left:3px; font-size:8px; font-weight:700;
+            color:#94a3b8; z-index:2; pointer-events:none;
+        }
+        #view-lolc .lolc-slot .slot-inner {
+            width:100%; height:100%; display:flex; justify-content:center; align-items:center;
+            overflow:hidden; line-height:1; font-weight:900; font-size:11px; text-align:center;
+        }
+        #view-lolc .lolc-slot.empty .slot-inner { color:#cbd5e1; font-size:16px; font-weight:300; }
+        #view-lolc .lolc-slot.c-lo { background:#22c55e; color:#000; }
+        #view-lolc .lolc-slot.c-lc { background:#ef4444; color:#fff; }
+        #view-lolc .lolc-slot.c-no,
+        #view-lolc .lolc-slot.c-nc,
+        #view-lolc .lolc-slot.c-ea { background:#fff; color:#000; border-color:#e5e7eb; }
         .bg-pipe-white { background:#fff; color:#000; border:1px solid #ddd; }
         .bg-pipe-yellow { background:#ff0; color:#000; }
         .bg-pipe-red { background:#f00; color:#fff; }
@@ -744,16 +772,6 @@
                     <label class="block text-sm font-bold mb-2 text-gray-600 uppercase">GHS Symbole (Max. 9)</label>
                     <div id="sch-ghsPicker" class="grid grid-cols-3 md:grid-cols-5 gap-2 bg-gray-50 p-3 rounded-md border-2"></div>
                 </div>
-                <div class="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-md border-2">
-                    <div>
-                        <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Start-Position (1-12)</label>
-                        <input type="number" id="sch-startPos" min="1" max="12" value="1" class="w-full p-2 border rounded font-bold outline-none focus:border-[#064e3b]">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Anzahl Etiketten</label>
-                        <input type="number" id="sch-printCount" min="1" max="12" value="12" class="w-full p-2 border rounded font-bold outline-none focus:border-[#064e3b]">
-                    </div>
-                </div>
                 <div class="p-4 bg-amber-50 rounded-md border-2 border-amber-200">
                     <label class="block text-xs font-bold mb-2 text-amber-700 uppercase">Drucker-Kalibrierung (mm)</label>
                     <div class="grid grid-cols-2 gap-4">
@@ -772,7 +790,7 @@
 
             <div class="grid grid-cols-2 gap-3 mt-6">
                 <button id="sch-addBtn" class="bg-gray-700 text-white py-3 rounded-md font-bold text-sm hover:bg-gray-800 transition uppercase tracking-wider">
-                    + Zum Bogen
+                    Alle 12 Felder füllen
                 </button>
                 <button id="sch-pdfBtn" class="bg-[#064e3b] text-white py-3 rounded-md font-black text-sm hover:bg-green-800 transition uppercase tracking-wider">
                     Bogen drucken
@@ -939,7 +957,7 @@
         </section>
         <section class="flex flex-col items-center">
             <span class="text-sm font-bold text-gray-400 mb-3 uppercase tracking-widest">Echtzeit-Vorschau</span>
-            <div class="preview-container shadow-2xl">
+            <div id="beh-previewContainer" class="preview-container shadow-2xl">
                 <div id="beh-previewCard" class="label-canvas">
                     <div id="beh-pPlant" class="row-zone top">ANLAGENTEIL</div>
                     <div id="beh-pSubstance" class="row-zone mid">STOFFNAME</div>
@@ -949,7 +967,7 @@
                     </div>
                 </div>
             </div>
-            <p class="mt-4 text-xs text-gray-400 text-center uppercase">A4 Querformat</p>
+            <p id="beh-fmtLabel" class="mt-4 text-xs text-gray-400 text-center uppercase">A4 Querformat</p>
         </section>
     </main>
 
@@ -1294,16 +1312,7 @@
                 <div id="lolc-inputSingle">
                     <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Nummerierung</label>
                     <input type="text" id="lolc-idInput" placeholder="bitte nummer eingeben" class="w-full p-4 border-2 rounded-md font-bold text-2xl outline-none focus:border-[#064e3b]">
-                    <div class="grid grid-cols-2 gap-4 mt-3 p-3 bg-gray-50 rounded-md border-2">
-                        <div>
-                            <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Start (1-12)</label>
-                            <input type="number" id="lolc-startPos" min="1" max="12" value="1" class="w-full p-2 border rounded font-bold outline-none focus:border-[#064e3b]">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Anzahl</label>
-                            <input type="number" id="lolc-printCount" min="1" max="12" value="12" class="w-full p-2 border rounded font-bold outline-none focus:border-[#064e3b]">
-                        </div>
-                    </div>
+                    <p class="text-[11px] text-gray-500 mt-2">Felder in der Bogen-Übersicht rechts anklicken, um sie mit dieser Konfiguration zu belegen.</p>
                 </div>
                 <div id="lolc-inputList" class="hidden">
                     <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Nummern-Liste (max. 12)</label>
@@ -1320,7 +1329,7 @@
 
             <div class="grid grid-cols-2 gap-3 mt-8">
                 <button id="lolc-addBtn" class="bg-gray-700 text-white py-3 rounded-md font-bold text-sm hover:bg-gray-800 transition uppercase tracking-wider">
-                    + Zum Bogen
+                    Alle 12 Felder füllen
                 </button>
                 <button id="lolc-pdfBtn" class="bg-[#064e3b] text-white py-3 rounded-md font-black text-sm hover:bg-green-800 transition uppercase tracking-wider">
                     Bogen drucken
@@ -1330,13 +1339,25 @@
             <div id="lolc-batchList" class="mt-4 space-y-2"></div>
         </section>
         <section class="flex flex-col items-center">
-            <span class="text-sm font-bold text-gray-400 mb-3 uppercase tracking-widest">Vorschau (Etikett 1)</span>
+            <span class="text-sm font-bold text-gray-400 mb-3 uppercase tracking-widest">Vorschau (Einzelnes Etikett)</span>
             <div class="preview-container shadow-2xl">
                 <div id="lolc-previewCard" class="label-canvas color-lo">
                     <span id="lolc-pText">LO-</span>
                 </div>
             </div>
             <p class="mt-4 text-xs text-gray-500 uppercase font-bold">Avery Zweckform L4743REV — 99,1×42,3 mm</p>
+
+            <div class="w-full border-t pt-5 mt-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-bold text-gray-400 uppercase tracking-widest">Bogen-Übersicht (A4)</span>
+                    <div class="flex gap-2">
+                        <button id="lolc-selectAll" class="text-[11px] font-bold text-[#064e3b] hover:underline uppercase">Alle</button>
+                        <button id="lolc-selectNone" class="text-[11px] font-bold text-gray-400 hover:underline uppercase">Keine</button>
+                    </div>
+                </div>
+                <p class="text-[11px] text-gray-500 mb-3">Felder anklicken, um sie mit der aktuellen Nummer/Status zu belegen. Grün umrandete Felder werden gedruckt.</p>
+                <div id="lolc-sheetGrid" class="lolc-sheet"></div>
+            </div>
         </section>
     </main>
 
@@ -1690,7 +1711,7 @@
             const p = document.createElement('p');
             p.className = 'text-xs text-gray-500';
             if (belegt === 0) {
-                p.innerHTML = '<span class="italic">Bogen ist leer.</span> Felder rechts anklicken oder unten Position + Anzahl verwenden.';
+                p.innerHTML = '<span class="italic">Bogen ist leer.</span> Felder rechts anklicken, um sie mit der aktuellen Konfiguration zu belegen.';
             } else {
                 p.innerHTML = `<span class="font-bold text-gray-600">${belegt}</span> Feld(er) belegt, <span class="font-bold text-[#064e3b]">${gedruckt}</span> zum Druck ausgewählt.`;
             }
@@ -1726,21 +1747,19 @@
             });
         }
 
-        ['sch-subClass','sch-mainText','sch-textCase','sch-signal','sch-arrowDir','sch-textSize','sch-startPos','sch-printCount']
+        ['sch-subClass','sch-mainText','sch-textCase','sch-signal','sch-arrowDir','sch-textSize']
             .forEach(id => document.getElementById(id).addEventListener('input', updatePreview));
         window.addEventListener('resize', updatePreview);
 
-        // "+ Zum Bogen" — belegt Felder ab Start-Position mit Anzahl (aktuelle Konfig)
+        // "Alle 12 Felder füllen" — belegt alle Felder mit aktueller Konfig
         document.getElementById('sch-addBtn').onclick = () => {
-            const startPos = parseInt(document.getElementById('sch-startPos').value) || 1;
-            const count = parseInt(document.getElementById('sch-printCount').value) || 1;
             if (!document.getElementById('sch-mainText').value.trim()) {
                 alert('Bitte Textinhalt eingeben.'); return;
             }
             const cfg = getCurrentConfig();
-            for (let p = startPos; p < startPos + count && p <= 12; p++) {
-                slotData[p - 1] = cfg;
-                selectedSlots.add(p - 1);
+            for (let p = 0; p < 12; p++) {
+                slotData[p] = cfg;
+                selectedSlots.add(p);
             }
             renderSheet();
             renderBatch();
@@ -1823,17 +1842,6 @@
 
             // Zu druckende Felder bestimmen
             let toPrint = [...selectedSlots].filter(i => slotData[i]);
-
-            // Fallback: kein Feld belegt -> Quick-Modus über Position + Anzahl
-            if (toPrint.length === 0 && slotData.every(s => !s)) {
-                const startPos = parseInt(document.getElementById('sch-startPos').value) || 1;
-                const count = parseInt(document.getElementById('sch-printCount').value) || 12;
-                const cfg = getCurrentConfig();
-                for (let p = startPos; p < startPos + count && p <= 12; p++) {
-                    slotData[p - 1] = cfg;
-                    toPrint.push(p - 1);
-                }
-            }
 
             if (toPrint.length === 0) {
                 alert('Keine Felder zum Druck ausgewählt. Felder in der Bogen-Übersicht anklicken.');
@@ -1985,7 +1993,8 @@
             if (tCase === 'upper') { plant = plant.toUpperCase(); substance = substance.toUpperCase(); }
 
             const previewWidth = document.getElementById('beh-previewCard').offsetWidth || 1;
-            const scaleFactor = previewWidth / 297;
+            const refW = (BEH_FORMATS[behFmt] ? BEH_FORMATS[behFmt].w : 297);
+            const scaleFactor = previewWidth / refW;
             const ptToMm = 0.3527;
             const pEl = document.getElementById('beh-pPlant');
             pEl.innerText = plant;
@@ -2027,11 +2036,33 @@
             'a3-p': { orient: 'p', size: 'a3', w: 297, h: 420, hint: 'A3 Papier — Hochformat' }
         };
         let behFmt = 'a4-l';
+        const behPrevContainer = document.getElementById('beh-previewContainer');
+        const behFmtLabel = document.getElementById('beh-fmtLabel');
+        function applyBehFormat() {
+            const F = BEH_FORMATS[behFmt];
+            // Vorschau-Seitenverhältnis an gewähltes Format anpassen
+            behPrevContainer.style.aspectRatio = F.w + '/' + F.h;
+            if (F.orient === 'p') {
+                // Hochformat: Höhe begrenzen, Breite folgt
+                behPrevContainer.style.maxWidth = 'none';
+                behPrevContainer.style.maxHeight = '520px';
+                behPrevContainer.style.width = 'auto';
+                behPrevContainer.style.height = '520px';
+            } else {
+                behPrevContainer.style.maxWidth = '700px';
+                behPrevContainer.style.maxHeight = 'none';
+                behPrevContainer.style.width = '100%';
+                behPrevContainer.style.height = 'auto';
+            }
+            behFmtLabel.textContent = F.hint.replace('Papier — ', '');
+            updatePreview();
+        }
         document.querySelectorAll('#beh-fmtPicker .ts-fmt-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('#beh-fmtPicker .ts-fmt-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 behFmt = btn.dataset.fmt;
+                applyBehFormat();
             });
         });
 
@@ -2087,7 +2118,7 @@
           });
         };
 
-        updatePreview();
+        applyBehFormat();
     })();
 
     /* ============================================================
@@ -2712,31 +2743,69 @@
             EA: { bg: [255,255,255], text: [0,0,0] }
         };
 
-        const batch = []; // [{statusType, value, startPos, count, textSize}]
+        // Slot-Modell wie bei Rohrleitungsschildern: 12 Felder, jedes hält eine Konfig
+        const slotData = new Array(12).fill(null);   // { statusType, value, textSize } | null
+        const selectedSlots = new Set();
         const batchListEl = document.getElementById('lolc-batchList');
+        const sheetGridEl = document.getElementById('lolc-sheetGrid');
+
+        const STATUS_CLASS = { LO:'c-lo', LC:'c-lc', NO:'c-no', NC:'c-nc', EA:'c-ea' };
+
+        function currentLolcConfig() {
+            return {
+                statusType: document.getElementById('lolc-statusType').value,
+                value: document.getElementById('lolc-idInput').value,
+                textSize: parseInt(document.getElementById('lolc-textSize').value) || 55
+            };
+        }
+
+        // ===== Bogen-Übersicht rendern =====
+        function renderSheet() {
+            sheetGridEl.innerHTML = '';
+            for (let i = 0; i < 12; i++) {
+                const cfg = slotData[i];
+                const slot = document.createElement('div');
+                slot.className = 'lolc-slot' + (cfg ? '' : ' empty') + (selectedSlots.has(i) ? ' selected' : '');
+                if (cfg) slot.classList.add(STATUS_CLASS[cfg.statusType] || '');
+
+                const num = document.createElement('span');
+                num.className = 'slot-num';
+                num.textContent = i + 1;
+                slot.appendChild(num);
+
+                const inner = document.createElement('div');
+                inner.className = 'slot-inner';
+                inner.textContent = cfg ? `${cfg.statusType}-${cfg.value || '?'}` : '+';
+                slot.appendChild(inner);
+
+                slot.onclick = () => {
+                    const current = currentLolcConfig();
+                    if (slotData[i] && JSON.stringify(slotData[i]) === JSON.stringify(current)) {
+                        if (selectedSlots.has(i)) selectedSlots.delete(i);
+                        else selectedSlots.add(i);
+                    } else {
+                        slotData[i] = current;
+                        selectedSlots.add(i);
+                    }
+                    renderSheet();
+                    renderBatch();
+                };
+                sheetGridEl.appendChild(slot);
+            }
+        }
 
         function renderBatch() {
             batchListEl.innerHTML = '';
-            if (batch.length === 0) {
-                batchListEl.innerHTML = '<p class="text-xs text-gray-400 italic">Bogen ist leer — der Druck-Button verwendet die aktuelle Konfiguration.</p>';
-                return;
+            const belegt = slotData.filter(Boolean).length;
+            const gedruckt = [...selectedSlots].filter(i => slotData[i]).length;
+            const p = document.createElement('p');
+            p.className = 'text-xs text-gray-500';
+            if (belegt === 0) {
+                p.innerHTML = '<span class="italic">Bogen ist leer.</span> Felder rechts anklicken oder Listen-Modus verwenden.';
+            } else {
+                p.innerHTML = `<span class="font-bold text-gray-600">${belegt}</span> Feld(er) belegt, <span class="font-bold text-[#064e3b]">${gedruckt}</span> zum Druck ausgewählt.`;
             }
-            const title = document.createElement('p');
-            title.className = 'text-xs font-bold text-gray-600 uppercase mb-2';
-            title.textContent = 'Bogen-Inhalt:';
-            batchListEl.appendChild(title);
-            batch.forEach((item, i) => {
-                const row = document.createElement('div');
-                row.className = 'flex items-center gap-2 bg-gray-50 border border-gray-200 rounded p-2 text-sm';
-                const endPos = Math.min(item.startPos + item.count - 1, 12);
-                row.innerHTML = `
-                    <span class="font-bold flex-1 truncate">${item.statusType}-${item.value || '?'}</span>
-                    <span class="text-xs text-gray-500 whitespace-nowrap">Pos ${item.startPos}–${endPos}</span>
-                    <button class="text-red-600 font-bold px-2 hover:bg-red-50 rounded">✕</button>
-                `;
-                row.querySelector('button').onclick = () => { batch.splice(i, 1); renderBatch(); };
-                batchListEl.appendChild(row);
-            });
+            batchListEl.appendChild(p);
         }
 
         btnSingle.onclick = () => {
@@ -2753,8 +2822,25 @@
             btnSingle.className = "flex-1 py-2 rounded font-bold transition mode-btn-inactive";
             divList.classList.remove('hidden');
             divSingle.classList.add('hidden');
+            // Liste direkt in die Felder übernehmen
+            fillFromList();
             updatePreview();
         };
+
+        // Listen-Modus: Nummern zeilenweise in die Felder 1..12 schreiben
+        function fillFromList() {
+            if (currentMode !== 'list') return;
+            const statusType = document.getElementById('lolc-statusType').value;
+            const textSize = parseInt(document.getElementById('lolc-textSize').value) || 55;
+            const lines = document.getElementById('lolc-listInput').value.split('\n').map(s => s.trim());
+            for (let i = 0; i < 12; i++) {
+                const v = lines[i];
+                if (v) { slotData[i] = { statusType, value: v, textSize }; selectedSlots.add(i); }
+                else { slotData[i] = null; selectedSlots.delete(i); }
+            }
+            renderSheet();
+            renderBatch();
+        }
 
         function updatePreview() {
             const statusType = document.getElementById('lolc-statusType').value;
@@ -2782,22 +2868,27 @@
             pText.style.fontSize = (textSize * 0.3527 * scaleFactor) + "px";
         }
 
-        ['lolc-statusType','lolc-textSize','lolc-idInput','lolc-listInput','lolc-startPos','lolc-printCount']
+        ['lolc-statusType','lolc-textSize','lolc-idInput']
             .forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('input', updatePreview); });
+        document.getElementById('lolc-listInput').addEventListener('input', () => { fillFromList(); updatePreview(); });
+        document.getElementById('lolc-statusType').addEventListener('input', () => { if (currentMode === 'list') fillFromList(); });
         window.addEventListener('resize', updatePreview);
 
+        // "Alle 12 Felder füllen" — mit aktueller Einzel-Konfig
         document.getElementById('lolc-addBtn').onclick = () => {
-            if (currentMode !== 'single') {
-                alert('Bogen-Modus funktioniert nur im Einzel-Modus. Im Listen-Modus wird die Liste direkt gedruckt.');
-                return;
-            }
-            const startPos = parseInt(document.getElementById('lolc-startPos').value) || 1;
-            const count = parseInt(document.getElementById('lolc-printCount').value) || 1;
-            const statusType = document.getElementById('lolc-statusType').value;
-            const value = document.getElementById('lolc-idInput').value;
-            const textSize = parseInt(document.getElementById('lolc-textSize').value) || 55;
-            batch.push({ statusType, value, startPos, count, textSize });
+            const cfg = currentLolcConfig();
+            for (let i = 0; i < 12; i++) { slotData[i] = cfg; selectedSlots.add(i); }
+            renderSheet();
             renderBatch();
+        };
+
+        document.getElementById('lolc-selectAll').onclick = () => {
+            for (let i = 0; i < 12; i++) if (slotData[i]) selectedSlots.add(i);
+            renderSheet(); renderBatch();
+        };
+        document.getElementById('lolc-selectNone').onclick = () => {
+            selectedSlots.clear();
+            renderSheet(); renderBatch();
         };
 
         function drawLolc(doc, statusType, fullText, textSize, x, y) {
@@ -2813,53 +2904,30 @@
         }
 
         document.getElementById('lolc-pdfBtn').onclick = () => {
+          const toPrint = [...selectedSlots].filter(i => slotData[i]);
+          if (toPrint.length === 0) {
+              alert('Keine Felder zum Druck ausgewählt. Felder in der Bogen-Übersicht anklicken.');
+              return;
+          }
           confirmPrint('Avery L4743REV (12 Etiketten / A4)', () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
             const labelW = 99.1, labelH = 42.3;
             const leftMargin = 6.4, topMargin = 21.6;
 
-            // slot[i] = { statusType, value, textSize } | null
-            const slots = new Array(12).fill(null);
-
-            if (batch.length === 0) {
-                if (currentMode === 'list') {
-                    const statusType = document.getElementById('lolc-statusType').value;
-                    const textSize = parseInt(document.getElementById('lolc-textSize').value);
-                    const lines = document.getElementById('lolc-listInput').value.split('\n');
-                    for (let i = 0; i < 12; i++) {
-                        slots[i] = { statusType, value: lines[i] || '', textSize };
-                    }
-                } else {
-                    const startPos = parseInt(document.getElementById('lolc-startPos').value) || 1;
-                    const count = parseInt(document.getElementById('lolc-printCount').value) || 12;
-                    const statusType = document.getElementById('lolc-statusType').value;
-                    const value = document.getElementById('lolc-idInput').value;
-                    const textSize = parseInt(document.getElementById('lolc-textSize').value);
-                    for (let p = startPos; p < startPos + count && p <= 12; p++) {
-                        slots[p - 1] = { statusType, value, textSize };
-                    }
-                }
-            } else {
-                batch.forEach(item => {
-                    for (let p = item.startPos; p < item.startPos + item.count && p <= 12; p++) {
-                        slots[p - 1] = { statusType: item.statusType, value: item.value, textSize: item.textSize };
-                    }
-                });
-            }
-
-            for (let i = 0; i < 12; i++) {
-                if (!slots[i]) continue;
+            toPrint.forEach(i => {
                 const col = i % 2, row = Math.floor(i / 2);
                 const x = leftMargin + (col * labelW);
                 const y = topMargin + (row * labelH);
-                const fullText = `${slots[i].statusType}-${slots[i].value}`;
-                drawLolc(doc, slots[i].statusType, fullText, slots[i].textSize, x, y);
-            }
+                const s = slotData[i];
+                const fullText = `${s.statusType}-${s.value}`;
+                drawLolc(doc, s.statusType, fullText, s.textSize, x, y);
+            });
             doc.save(`LOLC_Bogen.pdf`);
           });
         };
 
+        renderSheet();
         renderBatch();
         updatePreview();
     })();
@@ -2868,8 +2936,6 @@
        TÜR SCHILD
        ============================================================ */
     (function initTuerschild(){
-        const MAIN_IMG = 'IMG_5753.png';
-
         // Hinweisschild-Kategorien. Dateinamen = prefix + code + '.png'
         // erhi_ = Rettungszeichen (grün, e-codes), rett_ = Brandschutzzeichen (rot, n-codes)
         const HINWEIS_CATS = [
@@ -3032,18 +3098,12 @@
                 }
                 return;
             }
-            // Hauptsymbol
-            const main = document.createElement('img');
-            main.className = 'ts-main-img';
-            main.src = MAIN_IMG;
-            node.appendChild(main);
-            // Text
+            // Text (oben / Hauptbereich)
             if (state.textMode === 'mit' && textInput.value.trim()) {
                 const tx = document.createElement('div');
                 tx.style.textAlign = 'center';
                 tx.style.fontWeight = '800';
                 tx.style.width = '90%';
-                tx.style.marginTop = '2%';
                 tx.style.fontSize = (parseInt(textSize.value) * 0.35) + 'px';
                 tx.style.lineHeight = '1.1';
                 tx.textContent = textInput.value;
@@ -3125,48 +3185,39 @@
             const ix = c.x + pad, iy = c.y + pad;
             const iw = c.w - pad * 2, ih = c.h - pad * 2;
             const files = state.hinweisList.map(h => h.file);
+            const hasText = (state.textMode === 'mit') && document.getElementById('ts-text').value.trim();
             const nurHinweis = (state.hinweisMode === 'nur');
             const mitHinweis = (state.hinweisMode === 'mit') && files.length > 0;
 
             if (nurHinweis && files.length > 0) {
-                // Hinweisschild(er) so groß wie möglich aufs Blatt
+                // Nur Hinweisschild(er) — so groß wie möglich aufs Blatt
                 drawHinweisRow(doc, files, ix, iy, iw, ih);
                 return;
             }
 
             if (mitHinweis) {
-                // Hauptsymbol in oberen zwei Dritteln, Hinweisschild(er) unten mittig
-                const mainH = ih * (2/3);
-                drawImgContain(doc, MAIN_IMG, ix, iy, iw, mainH);
+                // Text (falls vorhanden) oben, Hinweisschild(er) unten mittig im unteren Drittel
                 const hzY = c.y + c.h * (2/3);
                 const hzH = c.h * (1/3);
                 drawHinweisRow(doc, files, ix, hzY, iw, hzH * 0.82);
-                if (state.textMode === 'mit' && document.getElementById('ts-text').value.trim()) {
-                    drawText(doc, c, iy + mainH);
+                if (hasText) {
+                    drawTextBlock(doc, c, iy, ih * (2/3));
                 }
-            } else {
-                // Nur Symbol (+ ggf. Text)
-                let mainH = ih;
-                let textReserve = 0;
-                if (state.textMode === 'mit' && document.getElementById('ts-text').value.trim()) {
-                    textReserve = ih * 0.14;
-                    mainH = ih - textReserve;
-                }
-                drawImgContain(doc, MAIN_IMG, ix, iy, iw, mainH);
-                if (textReserve > 0) {
-                    drawText(doc, c, iy + mainH);
-                }
+            } else if (hasText) {
+                // Nur Text — vertikal zentriert
+                drawTextBlock(doc, c, iy, ih);
             }
         }
 
-        function drawText(doc, c, topY) {
+        // Text zentriert in einer Box (x zentriert, y mittig der Box)
+        function drawTextBlock(doc, c, boxTopY, boxH) {
             const txt = document.getElementById('ts-text').value.trim();
             if (!txt) return;
             const scale = Math.min(c.w / 210, c.h / 297) || 1;
             const fs = parseInt(document.getElementById('ts-textSize').value) * scale;
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(fs);
-            doc.text(txt, c.x + c.w / 2, topY + (c.h * 0.04), { align: 'center', baseline: 'top', maxWidth: c.w * 0.9 });
+            doc.text(txt, c.x + c.w / 2, boxTopY + boxH / 2, { align: 'center', baseline: 'middle', maxWidth: c.w * 0.9 });
         }
 
         updatePreview();
