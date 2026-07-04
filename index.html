@@ -113,8 +113,8 @@
         #view-schilder .sch-sheet {
             width:100%; max-width:360px; margin:0 auto; aspect-ratio:210 / 297;
             background:#fff; border:1px solid #cbd5e1; box-shadow:0 4px 16px rgba(0,0,0,0.12);
-            /* A4-Ränder: oben 21.6mm, links 6.4mm — prozentual */
-            padding:7.27% 3.05%; box-sizing:border-box;
+            /* A4-Ränder exakt: oben 21,6mm (7,27%), links 5,9mm (2,81%) */
+            padding:7.27% 2.81%; box-sizing:border-box;
             display:grid; grid-template-columns:1fr 1fr; grid-template-rows:repeat(6,1fr);
             gap:0;
         }
@@ -738,6 +738,20 @@
                         <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Anzahl Etiketten</label>
                         <input type="number" id="sch-printCount" min="1" max="12" value="12" class="w-full p-2 border rounded font-bold outline-none focus:border-[#064e3b]">
                     </div>
+                </div>
+                <div class="p-4 bg-amber-50 rounded-md border-2 border-amber-200">
+                    <label class="block text-xs font-bold mb-2 text-amber-700 uppercase">Drucker-Kalibrierung (mm)</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[11px] font-bold mb-1 text-gray-500 uppercase">Versatz X (→ +)</label>
+                            <input type="number" id="sch-calibX" step="0.5" value="0" class="w-full p-2 border rounded font-bold outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold mb-1 text-gray-500 uppercase">Versatz Y (↓ +)</label>
+                            <input type="number" id="sch-calibY" step="0.5" value="0" class="w-full p-2 border rounded font-bold outline-none focus:border-amber-500">
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-amber-700 mt-2 leading-tight">Wichtig: Beim Drucken „Tatsächliche Größe" / 100% wählen (nicht „An Seite anpassen"). Falls es dann noch minimal verrutscht, hier feinjustieren.</p>
                 </div>
             </div>
 
@@ -1839,8 +1853,13 @@
             }
 
             toPrint.forEach(i => {
-                const x = 6.4 + (i % 2 * 99.1);
-                const y = 21.6 + (Math.floor(i / 2) * 42.3);
+                // Avery L4776-20 / L4743: 2 Spalten × 6 Zeilen, 99,1×42,3 mm,
+                // Seitenrand = (210 - 2×99,1)/2 = 5,9 mm, oben = (297 - 6×42,3)/2 = 21,6 mm,
+                // keine Zwischenräume. Kalibrier-Offset für Drucker-Feinjustage.
+                const offX = parseFloat(document.getElementById('sch-calibX').value) || 0;
+                const offY = parseFloat(document.getElementById('sch-calibY').value) || 0;
+                const x = 5.9 + (i % 2) * 99.1 + offX;
+                const y = 21.6 + Math.floor(i / 2) * 42.3 + offY;
                 drawSchild(doc, slotData[i], x, y);
             });
             doc.save("Rohrleitungs_Schilder.pdf");
