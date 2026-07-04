@@ -357,16 +357,19 @@
         #view-tuerschild .ts-hinweis-zone {
             position: absolute; left: 0; bottom: 0; width: 100%;
             height: 33.333%;
-            display: flex; align-items: center; justify-content: center;
+            display: flex; align-items: center; justify-content: center; gap: 3%;
         }
         #view-tuerschild .ts-hinweis-zone img {
-            max-height: 82%; max-width: 60%; object-fit: contain;
+            max-height: 82%; max-width: 46%; object-fit: contain;
         }
         #view-tuerschild .ts-preview.nur-hinweis .ts-hinweis-zone {
-            position: static; height: 100%;
+            position: static; height: 100%; flex-wrap: wrap; gap: 2%;
         }
         #view-tuerschild .ts-preview.nur-hinweis .ts-hinweis-zone img {
             max-height: 90%; max-width: 90%;
+        }
+        #view-tuerschild .ts-preview.nur-hinweis .ts-hinweis-zone img:not(:only-child) {
+            max-height: 44%; max-width: 44%;
         }
         #view-tuerschild .ts-multi-grid {
             display: grid; width: 100%; height: 100%; gap: 4px; padding: 4px;
@@ -1398,10 +1401,7 @@
         <section class="flex flex-col items-center">
             <span class="text-sm font-bold text-gray-400 mb-3 uppercase tracking-widest">Echtzeit-Vorschau</span>
             <div class="ts-preview-wrap">
-                <div id="ts-preview" class="ts-preview" style="aspect-ratio:210/297;">
-                    <img id="ts-previewImg" class="ts-main-img" src="IMG_5753.png" alt="Tür Schild">
-                    <div id="ts-previewHinweis" class="ts-hinweis-zone" style="display:none;"></div>
-                </div>
+                <div id="ts-preview" class="ts-preview" style="aspect-ratio:210/297;"></div>
             </div>
             <p id="ts-fmtInfo" class="mt-4 text-xs text-gray-400 text-center uppercase font-bold">A4 Hochkant</p>
         </section>
@@ -2893,7 +2893,7 @@
         let state = {
             textMode: 'mit',
             hinweisMode: 'ohne',
-            hinweis: null,   // { prefix, code }
+            hinweisList: [],   // Liste gewählter Hinweisschilder: [{ file }]
             fmt: 'a4-p'
         };
 
@@ -2919,9 +2919,15 @@
                     img.loading = 'lazy';
                     item.appendChild(img);
                     item.addEventListener('click', () => {
-                        picker.querySelectorAll('.ts-hinweis-item').forEach(el => el.classList.remove('selected'));
-                        item.classList.add('selected');
-                        state.hinweis = { file: cat.prefix + code };
+                        const file = cat.prefix + code;
+                        const idx = state.hinweisList.findIndex(h => h.file === file);
+                        if (idx >= 0) {
+                            state.hinweisList.splice(idx, 1);
+                            item.classList.remove('selected');
+                        } else {
+                            state.hinweisList.push({ file });
+                            item.classList.add('selected');
+                        }
                         updatePreview();
                     });
                     grid.appendChild(item);
@@ -2973,8 +2979,6 @@
 
         // --- Vorschau ---
         const preview = document.getElementById('ts-preview');
-        const previewImg = document.getElementById('ts-previewImg');
-        const previewHinweis = document.getElementById('ts-previewHinweis');
         const fmtInfo = document.getElementById('ts-fmtInfo');
 
         function updatePreview() {
@@ -2982,10 +2986,11 @@
             fmtInfo.textContent = F.label;
             preview.style.aspectRatio = F.aspect;
 
+            const hasHinweis = state.hinweisList.length > 0;
             const nurHinweis = (state.hinweisMode === 'nur');
-            const mitHinweis = (state.hinweisMode === 'mit') && state.hinweis;
+            const mitHinweis = (state.hinweisMode === 'mit') && hasHinweis;
 
-            preview.classList.toggle('nur-hinweis', nurHinweis && !!state.hinweis);
+            preview.classList.toggle('nur-hinweis', nurHinweis && hasHinweis);
             preview.classList.toggle('has-hinweis', mitHinweis);
 
             // Bei Mehrfach-Layout eine gekachelte Vorschau zeigen
@@ -2993,7 +2998,7 @@
             if (F.multi > 1) {
                 const grid = document.createElement('div');
                 grid.className = 'ts-multi-grid';
-                grid.style.gridTemplateColumns = (F.multi === 2) ? '1fr 1fr' : '1fr 1fr';
+                grid.style.gridTemplateColumns = '1fr 1fr';
                 grid.style.gridTemplateRows = (F.multi === 2) ? '1fr' : '1fr 1fr';
                 for (let i = 0; i < F.multi; i++) {
                     grid.appendChild(buildCell(nurHinweis, mitHinweis));
@@ -3007,7 +3012,7 @@
         function buildCell(nurHinweis, mitHinweis) {
             const cell = document.createElement('div');
             cell.className = 'ts-cell';
-            cell.classList.toggle('nur-hinweis', nurHinweis && !!state.hinweis);
+            cell.classList.toggle('nur-hinweis', nurHinweis && state.hinweisList.length > 0);
             cell.classList.toggle('has-hinweis', mitHinweis);
             fillNode(cell, nurHinweis, mitHinweis);
             return cell;
@@ -3015,12 +3020,14 @@
 
         function fillNode(node, nurHinweis, mitHinweis) {
             if (nurHinweis) {
-                if (state.hinweis) {
+                if (state.hinweisList.length > 0) {
                     const hz = document.createElement('div');
                     hz.className = 'ts-hinweis-zone';
-                    const im = document.createElement('img');
-                    im.src = state.hinweis.file + '.png';
-                    hz.appendChild(im);
+                    state.hinweisList.forEach(h => {
+                        const im = document.createElement('img');
+                        im.src = h.file + '.png';
+                        hz.appendChild(im);
+                    });
                     node.appendChild(hz);
                 }
                 return;
@@ -3042,13 +3049,15 @@
                 tx.textContent = textInput.value;
                 node.appendChild(tx);
             }
-            // Hinweisschild unten mittig
+            // Hinweisschild(er) unten mittig
             if (mitHinweis) {
                 const hz = document.createElement('div');
                 hz.className = 'ts-hinweis-zone';
-                const im = document.createElement('img');
-                im.src = state.hinweis.file + '.png';
-                hz.appendChild(im);
+                state.hinweisList.forEach(h => {
+                    const im = document.createElement('img');
+                    im.src = h.file + '.png';
+                    hz.appendChild(im);
+                });
                 node.appendChild(hz);
             }
         }
@@ -3056,8 +3065,8 @@
         // --- PDF ---
         document.getElementById('ts-pdfBtn').onclick = () => {
             const F = TS_FORMATS[state.fmt];
-            if ((state.hinweisMode === 'mit' || state.hinweisMode === 'nur') && !state.hinweis) {
-                alert('Bitte zuerst ein Hinweisschild auswählen.');
+            if ((state.hinweisMode === 'mit' || state.hinweisMode === 'nur') && state.hinweisList.length === 0) {
+                alert('Bitte zuerst mindestens ein Hinweisschild auswählen.');
                 return;
             }
             confirmPrint(F.hint, () => {
@@ -3098,25 +3107,40 @@
             doc.addImage(src, 'PNG', x, y, w, h);
         }
 
+        // Mehrere Hinweisschilder nebeneinander in eine Box einpassen (zentriert)
+        function drawHinweisRow(doc, files, bx, by, bw, bh) {
+            const n = files.length;
+            if (n === 0) return;
+            const gap = bw * 0.03;
+            const slotW = (bw - gap * (n - 1)) / n;
+            let x = bx;
+            files.forEach(f => {
+                drawImgContain(doc, f + '.png', x, by, slotW, bh);
+                x += slotW + gap;
+            });
+        }
+
         function drawCell(doc, c) {
             const pad = Math.min(c.w, c.h) * 0.06;
             const ix = c.x + pad, iy = c.y + pad;
             const iw = c.w - pad * 2, ih = c.h - pad * 2;
+            const files = state.hinweisList.map(h => h.file);
             const nurHinweis = (state.hinweisMode === 'nur');
-            const mitHinweis = (state.hinweisMode === 'mit') && state.hinweis;
+            const mitHinweis = (state.hinweisMode === 'mit') && files.length > 0;
 
-            if (nurHinweis && state.hinweis) {
-                drawImgContain(doc, state.hinweis.file + '.png', ix, iy, iw, ih);
+            if (nurHinweis && files.length > 0) {
+                // Hinweisschild(er) so groß wie möglich aufs Blatt
+                drawHinweisRow(doc, files, ix, iy, iw, ih);
                 return;
             }
 
             if (mitHinweis) {
-                // Hauptsymbol in oberen zwei Dritteln, Hinweisschild unten mittig
+                // Hauptsymbol in oberen zwei Dritteln, Hinweisschild(er) unten mittig
                 const mainH = ih * (2/3);
                 drawImgContain(doc, MAIN_IMG, ix, iy, iw, mainH);
                 const hzY = c.y + c.h * (2/3);
                 const hzH = c.h * (1/3);
-                drawImgContain(doc, state.hinweis.file + '.png', ix, hzY, iw, hzH * 0.82);
+                drawHinweisRow(doc, files, ix, hzY, iw, hzH * 0.82);
                 if (state.textMode === 'mit' && document.getElementById('ts-text').value.trim()) {
                     drawText(doc, c, iy + mainH);
                 }
