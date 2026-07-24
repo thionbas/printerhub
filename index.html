@@ -1366,25 +1366,39 @@
                         <option value="EA">EA (Weiß / Schwarz)</option>
                     </select>
                 </div>
+                <!-- Anlagenkürzel (gilt für alle Etiketten) -->
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Anlagenkürzel (für alle Etiketten)</label>
+                    <div class="flex gap-3 p-1 bg-gray-100 rounded-md mb-3">
+                        <button id="lolc-prefixOff" class="flex-1 py-2 rounded font-bold transition mode-btn-active">Ohne</button>
+                        <button id="lolc-prefixOn" class="flex-1 py-2 rounded font-bold transition mode-btn-inactive">Mit Anlagenkürzel</button>
+                    </div>
+                    <input type="text" id="lolc-prefix" maxlength="3" placeholder="z.B. THE" style="display:none;"
+                           class="w-full p-3 border-2 rounded-md font-bold text-xl uppercase tracking-widest text-center outline-none focus:border-[#064e3b]">
+                </div>
+
                 <div class="flex gap-4 p-1 bg-gray-100 rounded-md">
                     <button id="lolc-modeSingle" class="flex-1 py-2 rounded font-bold transition mode-btn-active">Einzel-Modus</button>
                     <button id="lolc-modeList" class="flex-1 py-2 rounded font-bold transition mode-btn-inactive">Listen-Modus</button>
                 </div>
                 <div id="lolc-inputSingle">
                     <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Nummerierung</label>
-                    <input type="text" id="lolc-idInput" placeholder="bitte nummer eingeben" class="w-full p-4 border-2 rounded-md font-bold text-2xl outline-none focus:border-[#064e3b]">
-                    <p class="text-[11px] text-gray-500 mt-2">Felder in der Bogen-Übersicht rechts anklicken, um sie mit dieser Konfiguration zu belegen.</p>
+                    <div class="flex items-center gap-2">
+                        <span id="lolc-numPrefixHint" class="font-black text-xl text-gray-400 whitespace-nowrap">LO-</span>
+                        <input type="text" id="lolc-num1" maxlength="2" inputmode="numeric" placeholder="01"
+                               class="w-20 p-3 border-2 rounded-md font-black text-2xl text-center outline-none focus:border-[#064e3b]">
+                        <span class="font-black text-2xl text-gray-400">–</span>
+                        <input type="text" id="lolc-num2" maxlength="2" inputmode="numeric" placeholder="02"
+                               class="w-20 p-3 border-2 rounded-md font-black text-2xl text-center outline-none focus:border-[#064e3b]">
+                    </div>
+                    <p class="text-[11px] text-gray-500 mt-2">Aufbau: <span class="font-bold">[Anlage-]Status-NN-NN</span>. Felder in der Bogen-Übersicht rechts anklicken, um sie mit dieser Konfiguration zu belegen.</p>
                 </div>
                 <div id="lolc-inputList" class="hidden">
-                    <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Nummern-Liste (max. 12)</label>
+                    <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Nummern-Liste (max. 12) — Format NN-NN</label>
                     <textarea id="lolc-listInput" rows="6" class="w-full p-4 border-2 rounded-md font-bold text-xl outline-none focus:border-[#064e3b] resize-none" placeholder="01-01&#10;01-02..."></textarea>
                 </div>
-                <div>
-                    <label class="flex justify-between text-sm font-bold mb-1 text-gray-600 uppercase">
-                        <span>Schriftgröße</span>
-                        <span id="lolc-fontSizeDisplay" class="font-mono text-[#064e3b]">55</span>
-                    </label>
-                    <input type="range" id="lolc-textSize" min="10" max="100" value="55" class="w-full accent-[#064e3b]">
+                <div class="text-xs text-gray-500 bg-gray-50 border rounded-md p-3">
+                    Die Schriftgröße wird automatisch so gesetzt, dass der Text immer genau ins Etikett passt.
                 </div>
             </div>
 
@@ -1437,11 +1451,14 @@
                         <button type="button" data-text="mit" class="active">Mit Text</button>
                         <button type="button" data-text="ohne">Ohne Text</button>
                     </div>
-                    <input type="text" id="ts-text" maxlength="60" class="w-full p-3 border-2 rounded-md font-bold mt-3 outline-none focus:border-[#064e3b]" placeholder="z.B. LAGER 3 · NUR FÜR BEFUGTE">
+                    <textarea id="ts-text" rows="3" maxlength="300"
+                        class="w-full p-3 border-2 rounded-md font-bold mt-3 outline-none focus:border-[#064e3b] resize-y leading-snug"
+                        placeholder="z.B. LAGER 3&#10;NUR FÜR BEFUGTE&#10;(Zeilenumbruch mit Enter)"></textarea>
+                    <p class="text-[11px] text-gray-500 mt-1">Mehrere Zeilen möglich — einfach Enter drücken.</p>
                     <div class="flex items-center gap-4 mt-3">
                         <span class="text-xs font-bold text-gray-500 uppercase">Größe</span>
-                        <input type="range" id="ts-textSize" min="20" max="140" value="60" class="flex-1 accent-[#064e3b]">
-                        <span id="ts-textSizeDisplay" class="font-mono font-bold w-10">60</span>
+                        <input type="range" id="ts-textSize" min="20" max="400" value="140" class="flex-1 accent-[#064e3b]">
+                        <span id="ts-textSizeDisplay" class="font-mono font-bold w-10">140</span>
                     </div>
                 </div>
 
@@ -1890,6 +1907,21 @@
                 };
                 sheetGridEl.appendChild(slot);
             }
+
+            // Textgrößen maßstabsgetreu nachziehen (Slot = 99,1 mm breites Etikett)
+            requestAnimationFrame(() => {
+                sheetGridEl.querySelectorAll('.sch-slot').forEach((slotEl, idx) => {
+                    const c = slotData[idx];
+                    if (!c) return;
+                    const t = slotEl.querySelector('.slot-text');
+                    if (!t) return;
+                    const w = slotEl.clientWidth;
+                    if (w > 0) {
+                        const pxPerMm = w / 99.1;
+                        t.style.fontSize = Math.max(4, c.fontSize * 0.3527 * pxPerMm) + 'px';
+                    }
+                });
+            });
         }
 
         // ===== Status-Zeile unter der Konfiguration =====
@@ -1916,7 +1948,17 @@
             document.getElementById('sch-pText').innerText = text;
             document.getElementById('sch-pSignal').innerText = cfg.signal;
             document.getElementById('sch-previewArrowSvg').innerHTML = ARROWS[cfg.arrow];
-            document.getElementById('sch-pText').style.fontSize = (cfg.fontSize / 10) + 'rem';
+
+            // Textgröße maßstabsgetreu: Etikett ist 99,1 mm breit, Vorschau X px breit
+            // -> pt in mm umrechnen (×0,3527) und mit px/mm skalieren
+            const pTextEl = document.getElementById('sch-pText');
+            const cardW = card.offsetWidth || 0;
+            if (cardW > 0) {
+                const pxPerMm = cardW / 99.1;
+                pTextEl.style.fontSize = (cfg.fontSize * 0.3527 * pxPerMm) + 'px';
+            } else {
+                pTextEl.style.fontSize = (cfg.fontSize / 10) + 'rem';
+            }
 
             // Dynamische GHS-Größen in Vorschau — begrenzt, damit kein Überlappen mit Signalwort
             const ghsZone = document.getElementById('sch-pGhs');
@@ -3266,12 +3308,71 @@
 
         const STATUS_CLASS = { LO:'c-lo', LC:'c-lc', NO:'c-no', NC:'c-nc', EA:'c-ea' };
 
+        // ===== Nomenklatur =====
+        // Aufbau: [ANLAGE-]STATUS-NN-NN   z.B. THE-LO-01-02  oder  LO-01-02
+        let usePrefix = false;
+
+        function pad2(v) {
+            const digits = (v || '').replace(/\D/g, '').slice(0, 2);
+            if (!digits) return '';
+            return digits.padStart(2, '0');
+        }
+
+        function getPrefix() {
+            if (!usePrefix) return '';
+            return (document.getElementById('lolc-prefix').value || '')
+                .replace(/[^A-Za-zÄÖÜäöü]/g, '').toUpperCase().slice(0, 3);
+        }
+
+        // numPart = "NN-NN"
+        function buildLolcText(prefix, statusType, numPart) {
+            const core = statusType + (numPart ? '-' + numPart : '');
+            return prefix ? prefix + '-' + core : core;
+        }
+
+        function currentNumPart() {
+            const a = pad2(document.getElementById('lolc-num1').value);
+            const b = pad2(document.getElementById('lolc-num2').value);
+            if (!a && !b) return '';
+            return `${a || '00'}-${b || '00'}`;
+        }
+
         function currentLolcConfig() {
             return {
                 statusType: document.getElementById('lolc-statusType').value,
-                value: document.getElementById('lolc-idInput').value,
-                textSize: parseInt(document.getElementById('lolc-textSize').value) || 55
+                prefix: getPrefix(),
+                value: currentNumPart()
             };
+        }
+
+        // ===== Auto-Fit Schriftgröße =====
+        // Etikett 99,1 × 42,3 mm — Text muss immer komplett hineinpassen.
+        const LOLC_W = 99.1, LOLC_H = 42.3;
+        const LOLC_PAD_X = 6;   // mm Innenabstand links/rechts
+        const LOLC_PAD_Y = 7;   // mm Innenabstand oben/unten
+
+        // Für PDF (mm): größte Punktgröße, bei der der Text in die Box passt
+        function autoFitPt(doc, text, maxWmm, maxHmm) {
+            doc.setFont('helvetica', 'bold');
+            let size = Math.floor(maxHmm / 0.3527);   // Begrenzung durch Höhe
+            while (size > 5) {
+                doc.setFontSize(size);
+                if (doc.getTextWidth(text) <= maxWmm) break;
+                size--;
+            }
+            return size;
+        }
+
+        // Für die HTML-Vorschau (px): gleiche Logik über Canvas-Messung
+        const _lolcMeasureCtx = document.createElement('canvas').getContext('2d');
+        function autoFitPx(text, maxWpx, maxHpx) {
+            let size = Math.floor(maxHpx);
+            while (size > 4) {
+                _lolcMeasureCtx.font = `900 ${size}px Helvetica, Arial, sans-serif`;
+                if (_lolcMeasureCtx.measureText(text).width <= maxWpx) break;
+                size--;
+            }
+            return size;
         }
 
         // ===== Bogen-Übersicht rendern =====
@@ -3290,7 +3391,9 @@
 
                 const inner = document.createElement('div');
                 inner.className = 'slot-inner';
-                inner.textContent = cfg ? `${cfg.statusType}-${cfg.value || '?'}` : '+';
+                inner.textContent = cfg
+                    ? buildLolcText(cfg.prefix, cfg.statusType, cfg.value || '00-00')
+                    : '+';
                 slot.appendChild(inner);
 
                 slot.onclick = () => {
@@ -3346,12 +3449,20 @@
         function fillFromList() {
             if (currentMode !== 'list') return;
             const statusType = document.getElementById('lolc-statusType').value;
-            const textSize = parseInt(document.getElementById('lolc-textSize').value) || 55;
+            const prefix = getPrefix();
             const lines = document.getElementById('lolc-listInput').value.split('\n').map(s => s.trim());
             for (let i = 0; i < 12; i++) {
-                const v = lines[i];
-                if (v) { slotData[i] = { statusType, value: v, textSize }; selectedSlots.add(i); }
-                else { slotData[i] = null; selectedSlots.delete(i); }
+                const raw = lines[i];
+                if (raw) {
+                    // Eingabe auf NN-NN normalisieren (z.B. "1-2" -> "01-02")
+                    const parts = raw.split(/[-–.\s/]+/).filter(Boolean);
+                    const a = pad2(parts[0]) || '00';
+                    const b = pad2(parts[1]) || '00';
+                    slotData[i] = { statusType, prefix, value: `${a}-${b}` };
+                    selectedSlots.add(i);
+                } else {
+                    slotData[i] = null; selectedSlots.delete(i);
+                }
             }
             renderSheet();
             renderBatch();
@@ -3359,18 +3470,25 @@
 
         function updatePreview() {
             const statusType = document.getElementById('lolc-statusType').value;
-            const textSize = document.getElementById('lolc-textSize').value;
-            document.getElementById('lolc-fontSizeDisplay').innerText = textSize;
-            let displayNum = "";
+            const prefix = getPrefix();
+
+            // Hinweis-Präfix vor den Nummernfeldern aktualisieren
+            const hint = document.getElementById('lolc-numPrefixHint');
+            if (hint) hint.textContent = (prefix ? prefix + '-' : '') + statusType + '-';
+
+            let numPart = "";
             if (currentMode === 'single') {
-                displayNum = document.getElementById('lolc-idInput').value;
+                numPart = currentNumPart();
             } else {
-                const lines = document.getElementById('lolc-listInput').value.split('\n');
-                displayNum = lines[0] || "";
+                const raw = (document.getElementById('lolc-listInput').value.split('\n')[0] || '').trim();
+                if (raw) {
+                    const parts = raw.split(/[-–.\s/]+/).filter(Boolean);
+                    numPart = `${pad2(parts[0]) || '00'}-${pad2(parts[1]) || '00'}`;
+                }
             }
             const pCard = document.getElementById('lolc-previewCard');
             const pText = document.getElementById('lolc-pText');
-            pText.innerText = `${statusType}-${displayNum}`;
+            pText.innerText = buildLolcText(prefix, statusType, numPart);
             pCard.className = "label-canvas";
             if (statusType === "LO") pCard.classList.add("color-lo");
             else if (statusType === "LC") pCard.classList.add("color-lc");
@@ -3378,13 +3496,51 @@
             else if (statusType === "NC") pCard.classList.add("color-nc");
             else if (statusType === "EA") pCard.classList.add("color-ea");
 
+            // Auto-Fit: Schrift so groß wie möglich, aber immer vollständig im Etikett
             const previewWidth = pCard.offsetWidth || 1;
-            const scaleFactor = previewWidth / 99.1;
-            pText.style.fontSize = (textSize * 0.3527 * scaleFactor) + "px";
+            const pxPerMm = previewWidth / LOLC_W;
+            const maxWpx = (LOLC_W - 2 * LOLC_PAD_X) * pxPerMm;
+            const maxHpx = (LOLC_H - 2 * LOLC_PAD_Y) * pxPerMm;
+            pText.style.fontSize = autoFitPx(pText.innerText, maxWpx, maxHpx) + "px";
+            pText.style.whiteSpace = 'nowrap';
         }
 
-        ['lolc-statusType','lolc-textSize','lolc-idInput']
-            .forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('input', updatePreview); });
+        // Anlagenkürzel-Umschalter
+        const prefixInput = document.getElementById('lolc-prefix');
+        const btnPrefixOff = document.getElementById('lolc-prefixOff');
+        const btnPrefixOn  = document.getElementById('lolc-prefixOn');
+        function setPrefixMode(on) {
+            usePrefix = on;
+            btnPrefixOn.className  = "flex-1 py-2 rounded font-bold transition " + (on ? "mode-btn-active" : "mode-btn-inactive");
+            btnPrefixOff.className = "flex-1 py-2 rounded font-bold transition " + (on ? "mode-btn-inactive" : "mode-btn-active");
+            prefixInput.style.display = on ? '' : 'none';
+            if (currentMode === 'list') fillFromList();
+            updatePreview();
+        }
+        btnPrefixOff.onclick = () => setPrefixMode(false);
+        btnPrefixOn.onclick  = () => setPrefixMode(true);
+        prefixInput.addEventListener('input', () => {
+            prefixInput.value = prefixInput.value.replace(/[^A-Za-zÄÖÜäöü]/g, '').toUpperCase().slice(0, 3);
+            if (currentMode === 'list') fillFromList();
+            updatePreview();
+        });
+
+        // Nummernfelder: nur Ziffern, max. 2 — automatisch ins nächste Feld springen
+        const num1 = document.getElementById('lolc-num1');
+        const num2 = document.getElementById('lolc-num2');
+        [num1, num2].forEach((el, idx) => {
+            el.addEventListener('input', () => {
+                el.value = el.value.replace(/\D/g, '').slice(0, 2);
+                if (idx === 0 && el.value.length === 2) num2.focus();
+                updatePreview();
+            });
+            el.addEventListener('blur', () => {
+                if (el.value) el.value = pad2(el.value);
+                updatePreview();
+            });
+        });
+
+        document.getElementById('lolc-statusType').addEventListener('input', updatePreview);
         document.getElementById('lolc-listInput').addEventListener('input', () => { fillFromList(); updatePreview(); });
         document.getElementById('lolc-statusType').addEventListener('input', () => { if (currentMode === 'list') fillFromList(); });
         window.addEventListener('resize', updatePreview);
@@ -3406,14 +3562,16 @@
             renderSheet(); renderBatch();
         };
 
-        function drawLolc(doc, statusType, fullText, textSize, x, y) {
-            const labelW = 99.1, labelH = 42.3;
+        function drawLolc(doc, statusType, fullText, x, y) {
+            const labelW = LOLC_W, labelH = LOLC_H;
             const cfg = COLORS[statusType];
             doc.setFillColor(cfg.bg[0], cfg.bg[1], cfg.bg[2]);
             doc.rect(x, y, labelW, labelH, 'F');
             doc.setTextColor(cfg.text[0], cfg.text[1], cfg.text[2]);
+            // Auto-Fit: passt garantiert ins Etikett
+            const fs = autoFitPt(doc, fullText, labelW - 2 * LOLC_PAD_X, labelH - 2 * LOLC_PAD_Y);
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(textSize * 1.8);
+            doc.setFontSize(fs);
             doc.text(fullText, x + (labelW / 2), y + (labelH / 2), { align: 'center', baseline: 'middle' });
             doc.setTextColor(0,0,0);
         }
@@ -3435,8 +3593,8 @@
                 const x = leftMargin + (col * labelW);
                 const y = topMargin + (row * labelH);
                 const s = slotData[i];
-                const fullText = `${s.statusType}-${s.value}`;
-                drawLolc(doc, s.statusType, fullText, s.textSize, x, y);
+                const fullText = buildLolcText(s.prefix, s.statusType, s.value);
+                drawLolc(doc, s.statusType, fullText, x, y);
             });
             doc.save(`LOLC_Bogen.pdf`);
           });
@@ -3558,6 +3716,47 @@
             updatePreview();
         });
 
+        // --- Textumbruch / Auto-Verkleinern (für Vorschau; PDF nutzt die gleiche Logik) ---
+        const _tsCtx = document.createElement('canvas').getContext('2d');
+
+        // Zeilen umbrechen: manuelle Umbrüche bleiben, zu lange Zeilen werden zusätzlich umbrochen
+        function tsWrapLines(raw, fsPt, maxWmm) {
+            _tsCtx.font = `700 ${fsPt}px Helvetica, Arial, sans-serif`;
+            const out = [];
+            raw.split('\n').forEach(line => {
+                const t = line.replace(/\s+$/, '');
+                if (!t.trim()) { out.push(''); return; }
+                const words = t.split(/\s+/);
+                let cur = '';
+                words.forEach(w => {
+                    const test = cur ? cur + ' ' + w : w;
+                    // px bei font-size==pt entspricht pt -> in mm umrechnen
+                    if (_tsCtx.measureText(test).width * 0.3527 <= maxWmm || !cur) cur = test;
+                    else { out.push(cur); cur = w; }
+                });
+                if (cur) out.push(cur);
+            });
+            return out;
+        }
+
+        // Größte Schriftgröße (max. die gewünschte), bei der der Textblock in die Box passt
+        function tsFitFontPt(raw, maxWmm, maxHmm, requested) {
+            let fs = Math.max(6, requested || 60);
+            while (fs > 6) {
+                const lines = tsWrapLines(raw, fs, maxWmm);
+                const lineH = fs * 0.3527 * 1.18;
+                // breiteste Zeile ermitteln (einzelne lange Wörter können nicht umbrochen werden)
+                _tsCtx.font = `700 ${fs}px Helvetica, Arial, sans-serif`;
+                let widest = 0;
+                lines.forEach(l => {
+                    if (l) widest = Math.max(widest, _tsCtx.measureText(l).width * 0.3527);
+                });
+                if (lines.length * lineH <= maxHmm && widest <= maxWmm) break;
+                fs -= 2;
+            }
+            return fs;
+        }
+
         // --- Vorschau ---
         const preview = document.getElementById('ts-preview');
         const fmtInfo = document.getElementById('ts-fmtInfo');
@@ -3617,10 +3816,24 @@
             if (state.textMode === 'mit' && textInput.value.trim()) {
                 const tx = document.createElement('div');
                 tx.style.textAlign = 'center';
-                tx.style.fontWeight = '800';
+                tx.style.fontWeight = '700';
+                // gleiche Schriftfamilie wie im PDF -> Vorschau entspricht dem Ausdruck
+                tx.style.fontFamily = 'Helvetica, Arial, sans-serif';
                 tx.style.width = '90%';
-                tx.style.fontSize = (parseInt(textSize.value) * 0.35) + 'px';
-                tx.style.lineHeight = '1.1';
+                // Vorschau maßstabsgetreu + gleiche Schrumpf-Logik wie im PDF,
+                // damit Vorschau und Ausdruck identisch aussehen
+                const F2 = TS_FORMATS[state.fmt];
+                const cellWmm = (F2.multi > 1) ? F2.w / 2 : F2.w;
+                const cellHmm = (F2.multi === 4) ? F2.h / 2 : F2.h;
+                // Maßstab über die Blattbreite — die Zelle ist hier noch nicht im DOM
+                const pxPerMm = (preview.clientWidth || 600) / F2.w;
+                const boxWmm = cellWmm * 0.85;
+                const boxHmm = (mitHinweis ? cellHmm * (2/3) : cellHmm) * 0.84;
+                const effPt = tsFitFontPt(textInput.value, boxWmm, boxHmm, parseInt(textSize.value));
+                tx.style.fontSize = (effPt * 0.3527 * pxPerMm) + 'px';
+                tx.style.lineHeight = '1.18';
+                tx.style.whiteSpace = 'pre-line';   // Zeilenumbrüche übernehmen
+                tx.style.wordBreak = 'break-word';
                 tx.textContent = textInput.value;
                 node.appendChild(tx);
             }
@@ -3726,13 +3939,48 @@
 
         // Text zentriert in einer Box (x zentriert, y mittig der Box)
         function drawTextBlock(doc, c, boxTopY, boxH) {
-            const txt = document.getElementById('ts-text').value.trim();
-            if (!txt) return;
-            const scale = Math.min(c.w / 210, c.h / 297) || 1;
-            const fs = parseInt(document.getElementById('ts-textSize').value) * scale;
+            const raw = document.getElementById('ts-text').value;
+            if (!raw.trim()) return;
+
+            const maxW = c.w * 0.9;
+            let fs = parseInt(document.getElementById('ts-textSize').value) || 60;
             doc.setFont('helvetica', 'bold');
+
+            // Vom Nutzer gesetzte Zeilenumbrüche beibehalten, zu lange Zeilen zusätzlich umbrechen
+            function layout(size) {
+                doc.setFontSize(size);
+                const out = [];
+                raw.split('\n').forEach(line => {
+                    const t = line.replace(/\s+$/, '');
+                    if (!t.trim()) { out.push(''); return; }
+                    doc.splitTextToSize(t, maxW).forEach(l => out.push(l));
+                });
+                return out;
+            }
+
+            // Schrift verkleinern, bis der Block in Höhe UND Breite passt
+            function widestOf(ls, size) {
+                doc.setFontSize(size);
+                let w = 0;
+                ls.forEach(l => { if (l) w = Math.max(w, doc.getTextWidth(l)); });
+                return w;
+            }
+            let lines = layout(fs);
+            let lineH = fs * 0.3527 * 1.18;
+            while (fs > 6 && (lines.length * lineH > boxH || widestOf(lines, fs) > maxW)) {
+                fs -= 2;
+                lines = layout(fs);
+                lineH = fs * 0.3527 * 1.18;
+            }
+
             doc.setFontSize(fs);
-            doc.text(txt, c.x + c.w / 2, boxTopY + boxH / 2, { align: 'center', baseline: 'middle', maxWidth: c.w * 0.9 });
+            const totalH = lines.length * lineH;
+            // erste Grundlinie so, dass der Block vertikal mittig sitzt
+            let y = boxTopY + boxH / 2 - totalH / 2 + lineH / 2;
+            lines.forEach(l => {
+                if (l) doc.text(l, c.x + c.w / 2, y, { align: 'center', baseline: 'middle' });
+                y += lineH;
+            });
         }
 
         updatePreview();
