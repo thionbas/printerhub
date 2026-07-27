@@ -141,6 +141,75 @@
         #view-schilder .sch-slot .slot-ghs { display:flex; gap:1px; margin-top:2px; }
         #view-schilder .sch-slot .slot-ghs img { width:9px; height:9px; object-fit:contain; }
         #view-schilder .sch-slot.empty .slot-inner { color:#cbd5e1; font-size:16px; font-weight:300; }
+
+        /* ===== PROBE GROSS — Einzel-Vorschau (105 × 41 mm) ===== */
+        #view-probegross .pg-preview-wrap {
+            width:100%; max-width:500px; aspect-ratio:105 / 41; background:#fff;
+            border:1px solid #cbd5e1;
+        }
+        #view-probegross .pg-label {
+            width:100%; height:100%; box-sizing:border-box; padding:3% 3.5%;
+            display:flex; flex-direction:column; font-family:Helvetica,Arial,sans-serif; overflow:hidden;
+        }
+        #view-probegross .pg-head {
+            font-size:9px; font-weight:700; color:#334155; text-align:center;
+            border-bottom:1px solid #cbd5e1; padding-bottom:1px; margin-bottom:1px; line-height:1.1;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        #view-probegross .pg-row {
+            display:flex; align-items:baseline; gap:4px; line-height:1.05; min-height:0;
+        }
+        #view-probegross .pg-rlabel {
+            font-size:7px; font-weight:700; color:#64748b; text-transform:uppercase;
+            flex:0 0 auto; min-width:34px;
+        }
+        #view-probegross .pg-rval {
+            font-weight:800; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        #view-probegross .pg-rmeta { font-size:7px; font-weight:700; color:#64748b; flex:0 0 auto; }
+        #view-probegross .pg-bottom {
+            margin-top:auto; display:flex; align-items:flex-end; justify-content:space-between; gap:4px;
+        }
+        #view-probegross .pg-ghs { display:flex; align-items:center; }
+        #view-probegross .pg-ghs img { object-fit:contain; }
+        #view-probegross .pg-signal {
+            font-weight:900; font-style:italic; font-size:9px; color:#b91c1c;
+            text-transform:uppercase; white-space:nowrap;
+        }
+        /* ===== PROBE GROSS — Bogen-Übersicht (A4, 2×7 = 14) ===== */
+        #view-probegross .pg-sheet {
+            width:100%; max-width:360px; margin:0 auto; aspect-ratio:210 / 297;
+            background:#fff; border:1px solid #cbd5e1; box-shadow:0 4px 16px rgba(0,0,0,0.12);
+            /* Avery 3477: 2 Spalten × 105mm = volle Breite, 7 Reihen × 41mm; oben ca. 5mm Rand */
+            padding:1.68% 0 1.68% 0; box-sizing:border-box;
+            display:grid; grid-template-columns:1fr 1fr; grid-template-rows:repeat(7,1fr); gap:0;
+        }
+        #view-probegross .pg-slot {
+            position:relative; border:2px solid transparent; box-sizing:border-box;
+            cursor:pointer; overflow:hidden; display:flex; flex-direction:column;
+            padding:3% 4%; transition:box-shadow .12s;
+        }
+        #view-probegross .pg-slot:hover { box-shadow:inset 0 0 0 2px #94a3b8; }
+        #view-probegross .pg-slot.selected { border-color:#064e3b; box-shadow:inset 0 0 0 1px #064e3b; }
+        #view-probegross .pg-slot .slot-num {
+            position:absolute; top:1px; left:2px; font-size:7px; font-weight:700;
+            color:#94a3b8; z-index:2; pointer-events:none;
+        }
+        #view-probegross .pg-slot .slot-inner {
+            width:100%; height:100%; display:flex; flex-direction:column; justify-content:center;
+            overflow:hidden; line-height:1.05;
+        }
+        #view-probegross .pg-slot .slot-sub {
+            font-weight:900; font-size:7px; color:#0f172a;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        #view-probegross .pg-slot .slot-sub2 {
+            font-weight:600; font-size:6px; color:#475569;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        #view-probegross .pg-slot.empty .slot-inner {
+            color:#cbd5e1; font-size:15px; font-weight:300; align-items:center; justify-content:center;
+        }
         /* === SCHILD OHNE TRÄGER (Pfeilform) === */
         #view-schilderot .preview-wrapper {
             width:100%; max-width:520px; aspect-ratio:991 / 423; background:#fff;
@@ -169,6 +238,87 @@
             text-align:center; font-weight:900; font-style:italic; font-size:0.62rem;
             line-height:1; margin-top:2px; text-transform:uppercase;
         }
+        /* ===== PROBE GROSS — Avery 3477 (105 × 41 mm, 14/Blatt) ===== */
+        #view-probegross .pg-preview-wrap {
+            width:100%; max-width:520px; aspect-ratio:105 / 41;
+            background:#fff; border:1px solid #cbd5e1;
+        }
+        #view-probegross .pg-label {
+            width:100%; height:100%; box-sizing:border-box;
+            padding:3.5% 3%; display:flex; flex-direction:column;
+            font-family:Helvetica,Arial,sans-serif; overflow:hidden;
+        }
+        #view-probegross .pg-head {
+            width:100%; text-align:center; font-weight:700; color:#334155;
+            border-bottom:1px solid #cbd5e1; padding-bottom:1.5%; margin-bottom:1.5%;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.1;
+        }
+        #view-probegross .pg-row {
+            display:flex; align-items:center; flex:1 1 0; min-height:0;
+            gap:4px; line-height:1; overflow:hidden;
+            border-bottom:1px dotted #e2e8f0;
+        }
+        #view-probegross .pg-rlabel {
+            font-weight:900; text-transform:uppercase; color:#64748b;
+            font-size:0.52rem; letter-spacing:0.02em;
+            width:4.6em; flex-shrink:0; white-space:nowrap;
+        }
+        #view-probegross .pg-rval {
+            font-weight:900; white-space:nowrap; overflow:hidden;
+            text-overflow:ellipsis; min-width:0;
+        }
+        #view-probegross .pg-rmeta {
+            font-size:0.55rem; font-weight:700; color:#475569;
+            flex-shrink:0; white-space:nowrap;
+        }
+        #view-probegross .pg-bottom {
+            flex:1.25 1 0; display:flex; align-items:center;
+            justify-content:space-between; gap:6px; min-height:0; padding-top:2px;
+        }
+        #view-probegross .pg-ghs { display:flex; align-items:center; overflow:hidden; }
+        #view-probegross .pg-ghs img { object-fit:contain; }
+        #view-probegross .pg-signal {
+            font-weight:900; font-style:italic; font-size:0.62rem;
+            text-transform:uppercase; flex-shrink:0; white-space:nowrap;
+        }
+        /* Bogen-Übersicht: A4 mit 2 × 7 Feldern, Etiketten randlos (105+105 = 210 mm) */
+        #view-probegross .pg-sheet {
+            width:100%; max-width:360px; margin:0 auto; aspect-ratio:210 / 297;
+            background:#fff; border:1px solid #cbd5e1; box-shadow:0 4px 16px rgba(0,0,0,0.12);
+            /* oben 5 mm = 1,68 % der Höhe, links 0 */
+            padding:1.68% 0; box-sizing:border-box;
+            display:grid; grid-template-columns:1fr 1fr; grid-template-rows:repeat(7,1fr); gap:0;
+        }
+        #view-probegross .pg-slot {
+            position:relative; border:2px solid transparent; box-sizing:border-box;
+            cursor:pointer; overflow:hidden; display:flex; flex-direction:column;
+            justify-content:center; padding:4% 5%; transition:box-shadow .12s;
+        }
+        #view-probegross .pg-slot:hover { box-shadow:inset 0 0 0 2px #94a3b8; }
+        #view-probegross .pg-slot.selected { border-color:#064e3b; box-shadow:inset 0 0 0 1px #064e3b; }
+        #view-probegross .pg-slot .slot-num {
+            position:absolute; top:1px; left:3px; font-size:7px; font-weight:700;
+            color:#94a3b8; z-index:2; pointer-events:none;
+        }
+        #view-probegross .pg-slot .slot-inner {
+            width:100%; display:flex; flex-direction:column; gap:1px;
+            overflow:hidden; line-height:1.05;
+        }
+        #view-probegross .pg-slot .slot-text {
+            font-weight:900; font-size:7px; text-align:left;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        #view-probegross .pg-slot .slot-sub {
+            font-size:6px; color:#475569; font-weight:700;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        #view-probegross .pg-slot .slot-ghs { display:flex; gap:1px; margin-top:1px; }
+        #view-probegross .pg-slot .slot-ghs img { width:7px; height:7px; object-fit:contain; }
+        #view-probegross .pg-slot.empty .slot-inner {
+            color:#cbd5e1; font-size:14px; font-weight:300;
+            align-items:center; justify-content:center;
+        }
+
         /* ===== LO/LC/EA Bogen-Übersicht (A4) ===== */
         #view-lolc .lolc-sheet {
             width:100%; max-width:360px; margin:0 auto; aspect-ratio:210 / 297;
@@ -1037,25 +1187,42 @@
     <!-- ============================================== -->
     <main id="view-probegross" class="hidden-section max-w-6xl mx-auto p-4 sm:p-6 mt-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
         <section class="bg-white p-6 rounded-lg shadow-xl border border-gray-200">
-            <h2 class="text-lg font-bold border-b pb-2 mb-4 uppercase text-gray-700">Probe Groß (L4743) — 12 Etiketten / Bogen</h2>
+            <h2 class="text-lg font-bold border-b pb-2 mb-4 uppercase text-gray-700">Probe Groß (Avery 3477) — 14 Etiketten / Bogen</h2>
             <div class="space-y-4">
+                <!-- Optionale Kopfzeile: Betrieb / Abteilung / Telefon -->
+                <div class="bg-gray-50 p-3 rounded border">
+                    <label class="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase cursor-pointer">
+                        <input type="checkbox" id="pg-headEnable" class="accent-[#064e3b] w-4 h-4">
+                        Kopfzeile drucken (Betrieb / Abteilung / Telefon)
+                    </label>
+                    <div id="pg-headFields" class="grid grid-cols-3 gap-2 mt-3" style="display:none;">
+                        <input type="text" id="pg-betrieb" class="p-2 border rounded font-bold text-sm" placeholder="Betrieb">
+                        <input type="text" id="pg-abteilung" class="p-2 border rounded font-bold text-sm" placeholder="Abteilung">
+                        <input type="text" id="pg-telefon" class="p-2 border rounded font-bold text-sm" placeholder="Telefon">
+                    </div>
+                </div>
+
                 <div class="bg-gray-50 p-3 rounded border">
                     <label class="block text-xs font-bold text-gray-500 uppercase">1. Stoffname</label>
                     <input type="text" id="pg-substance" class="w-full p-2 border rounded font-bold mb-2" placeholder="z.B. Schwefelsäure">
                     <input type="range" id="pg-substanceSize" min="8" max="40" value="14" class="w-full accent-[#064e3b]">
                 </div>
                 <div class="bg-gray-50 p-3 rounded border">
-                    <label class="block text-xs font-bold text-gray-500 uppercase">2. Probenahmestelle</label>
+                    <label class="block text-xs font-bold text-gray-500 uppercase">2. Materialnummer</label>
+                    <input type="text" id="pg-matnr" class="w-full p-2 border rounded font-bold" placeholder="z.B. 100234">
+                </div>
+                <div class="bg-gray-50 p-3 rounded border">
+                    <label class="block text-xs font-bold text-gray-500 uppercase">3. Probenahmestelle</label>
                     <input type="text" id="pg-location" class="w-full p-2 border rounded font-bold mb-2" placeholder="z.B. Tank B-200">
                     <input type="range" id="pg-locationSize" min="8" max="30" value="11" class="w-full accent-[#064e3b]">
                 </div>
                 <div class="bg-gray-50 p-3 rounded border">
-                    <label class="block text-xs font-bold text-gray-500 uppercase">3. Probenehmer</label>
+                    <label class="block text-xs font-bold text-gray-500 uppercase">4. Probenehmer</label>
                     <input type="text" id="pg-sampler" class="w-full p-2 border rounded font-bold mb-2" placeholder="Name">
                     <input type="range" id="pg-samplerSize" min="8" max="24" value="10" class="w-full accent-[#064e3b]">
                 </div>
                 <div class="bg-gray-50 p-3 rounded border">
-                    <label class="block text-xs font-bold text-gray-500 uppercase">4. Datum (optional — leer lassen für Hand-Eintrag)</label>
+                    <label class="block text-xs font-bold text-gray-500 uppercase">5. Datum (optional — leer lassen für Hand-Eintrag)</label>
                     <input type="text" id="pg-date" class="w-full p-2 border rounded font-bold" placeholder="z.B. 05.05.2026 oder leer lassen">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
@@ -1080,56 +1247,78 @@
                     <div id="pg-ghsPicker" class="grid grid-cols-5 gap-2 bg-white p-2 rounded border-2"></div>
                 </div>
 
-                <!-- Position + Anzahl -->
-                <div class="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-md border-2">
-                    <div>
-                        <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Start-Position (1-12)</label>
-                        <input type="number" id="pg-startPos" min="1" max="12" value="1" class="w-full p-2 border rounded font-bold outline-none focus:border-[#064e3b]">
+                <!-- Drucker-Kalibrierung -->
+                <div class="p-4 bg-amber-50 rounded-md border-2 border-amber-200">
+                    <label class="block text-xs font-bold mb-2 text-amber-700 uppercase">Drucker-Kalibrierung (mm)</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[11px] font-bold mb-1 text-gray-500 uppercase">Versatz X (→ +)</label>
+                            <input type="number" id="pg-calibX" step="0.5" value="0" class="w-full p-2 border rounded font-bold outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold mb-1 text-gray-500 uppercase">Versatz Y (↓ +)</label>
+                            <input type="number" id="pg-calibY" step="0.5" value="0" class="w-full p-2 border rounded font-bold outline-none focus:border-amber-500">
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Anzahl Etiketten</label>
-                        <input type="number" id="pg-printCount" min="1" max="12" value="12" class="w-full p-2 border rounded font-bold outline-none focus:border-[#064e3b]">
-                    </div>
+                    <p class="text-[10px] text-amber-700 mt-2 leading-tight">Beim Drucken „Tatsächliche Größe" / 100% wählen (nicht „An Seite anpassen"). Falls es dann minimal verrutscht, hier feinjustieren.</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3 mt-6">
                 <button id="pg-addBtn" class="bg-gray-700 text-white py-3 rounded-md font-bold text-sm hover:bg-gray-800 transition uppercase tracking-wider">
-                    + Zum Bogen
+                    Alle 14 Felder füllen
                 </button>
                 <button id="pg-pdfBtn" class="bg-[#064e3b] text-white py-3 rounded-md font-black text-sm hover:bg-green-800 transition uppercase tracking-wider">
                     Bogen drucken
                 </button>
             </div>
 
-            <!-- Bogen-Liste -->
+            <!-- Bogen-Status -->
             <div id="pg-batchList" class="mt-4 space-y-2"></div>
         </section>
 
         <section class="flex flex-col items-center">
-            <span class="text-sm font-bold text-gray-400 mb-3 uppercase tracking-widest">Vorschau (99,1×42,3 mm)</span>
-            <div class="preview-container shadow-2xl">
-                <div id="pg-previewCard" class="label-canvas">
-                    <div class="row row-line" style="height:24%">
-                        <span class="row-label">Stoff:</span>
-                        <span id="pg-pSubstance" class="row-value">STOFFNAME</span>
+            <span class="text-sm font-bold text-gray-400 mb-3 uppercase tracking-widest">Vorschau (105 × 41 mm)</span>
+            <div class="pg-preview-wrap shadow-2xl">
+                <div id="pg-previewCard" class="pg-label">
+                    <div id="pg-pHead" class="pg-head" style="display:none;"></div>
+                    <div class="pg-row">
+                        <span class="pg-rlabel">Stoff:</span>
+                        <span id="pg-pSubstance" class="pg-rval">STOFFNAME</span>
                     </div>
-                    <div class="row row-line" style="height:22%">
-                        <span class="row-label">Stelle:</span>
-                        <span id="pg-pLocation" class="row-value">PROBENAHMESTELLE</span>
+                    <div class="pg-row">
+                        <span class="pg-rlabel">MatNr:</span>
+                        <span id="pg-pMatnr" class="pg-rval">—</span>
                     </div>
-                    <div class="row row-line" style="height:22%">
-                        <span class="row-label">Nehmer:</span>
-                        <span id="pg-pSampler" class="row-value" style="flex:1">PROBENEHMER</span>
-                        <span id="pg-pDate" class="row-meta">Datum:&nbsp;________</span>
+                    <div class="pg-row">
+                        <span class="pg-rlabel">Stelle:</span>
+                        <span id="pg-pLocation" class="pg-rval">PROBENAHMESTELLE</span>
                     </div>
-                    <div class="row-bottom" style="height:32%">
-                        <div id="pg-pGhs" class="ghs-center"></div>
-                        <div id="pg-pSignal" class="signal-right"></div>
+                    <div class="pg-row">
+                        <span class="pg-rlabel">Nehmer:</span>
+                        <span id="pg-pSampler" class="pg-rval" style="flex:1">PROBENEHMER</span>
+                        <span id="pg-pDate" class="pg-rmeta">Datum:&nbsp;______</span>
+                    </div>
+                    <div class="pg-bottom">
+                        <div id="pg-pGhs" class="pg-ghs"></div>
+                        <div id="pg-pSignal" class="pg-signal"></div>
                     </div>
                 </div>
             </div>
-            <p class="mt-4 text-xs text-gray-500 text-center uppercase">Avery L4743REV — Beschriftung links</p>
+            <p class="mt-3 mb-5 text-xs text-gray-500 text-center uppercase">Avery Zweckform 3477 · 105 × 41 mm · 14/Blatt</p>
+
+            <!-- ===== BOGEN-GESAMTÜBERSICHT (A4, 14 Felder) ===== -->
+            <div class="w-full border-t pt-5">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-bold text-gray-400 uppercase tracking-widest">Bogen-Übersicht (A4)</span>
+                    <div class="flex gap-2">
+                        <button id="pg-selectAll" class="text-[11px] font-bold text-[#064e3b] hover:underline uppercase">Alle</button>
+                        <button id="pg-selectNone" class="text-[11px] font-bold text-gray-400 hover:underline uppercase">Keine</button>
+                    </div>
+                </div>
+                <p class="text-[11px] text-gray-500 mb-3">Felder anklicken, um sie mit der aktuellen Konfiguration zu belegen. Grün umrandete Felder werden gedruckt.</p>
+                <div id="pg-sheetGrid" class="pg-sheet"></div>
+            </div>
         </section>
     </main>
 
@@ -2685,9 +2874,35 @@
         let selectedGhs = [];
         buildGhsPicker('pg-ghsPicker', 9, (sel) => { selectedGhs = sel; updatePreview(); });
 
+        // ===== Avery 3477: 105 × 41 mm, 2 Spalten × 7 Reihen = 14 Etiketten auf A4 =====
+        const LBL_W = 105, LBL_H = 41;
+        const COLS = 2, ROWS = 7, SLOTS = COLS * ROWS;
+        const SHEET_LEFT = 0;      // 2 × 105 mm = 210 mm → randlos
+        const SHEET_TOP  = 5;      // (297 − 7×41) / 2 ≈ 5 mm
+
+        const slotData = new Array(SLOTS).fill(null);
+        const selectedSlots = new Set();
+
+        const batchListEl = document.getElementById('pg-batchList');
+        const sheetGridEl = document.getElementById('pg-sheetGrid');
+        const headEnable  = document.getElementById('pg-headEnable');
+        const headFields  = document.getElementById('pg-headFields');
+
+        function headText() {
+            if (!headEnable.checked) return '';
+            const parts = [
+                document.getElementById('pg-betrieb').value.trim(),
+                document.getElementById('pg-abteilung').value.trim(),
+                document.getElementById('pg-telefon').value.trim()
+            ].filter(Boolean);
+            return parts.join(' / ');
+        }
+
         function getCurrentConfig() {
             return {
+                head: headText(),
                 substance: document.getElementById('pg-substance').value,
+                matnr: document.getElementById('pg-matnr').value,
                 location: document.getElementById('pg-location').value,
                 sampler: document.getElementById('pg-sampler').value,
                 date: document.getElementById('pg-date').value,
@@ -2705,188 +2920,279 @@
             return text || '';
         }
 
-        const batch = [];
-        const batchListEl = document.getElementById('pg-batchList');
+        // ===== Bogen-Übersicht =====
+        function renderSheet() {
+            sheetGridEl.innerHTML = '';
+            for (let i = 0; i < SLOTS; i++) {
+                const cfg = slotData[i];
+                const slot = document.createElement('div');
+                slot.className = 'pg-slot' + (cfg ? '' : ' empty') + (selectedSlots.has(i) ? ' selected' : '');
+
+                const num = document.createElement('span');
+                num.className = 'slot-num';
+                num.textContent = i + 1;
+                slot.appendChild(num);
+
+                const inner = document.createElement('div');
+                inner.className = 'slot-inner';
+                if (cfg) {
+                    const t = document.createElement('div');
+                    t.className = 'slot-text';
+                    t.textContent = applyTextCase(cfg.substance || 'STOFF', cfg.textCase);
+                    inner.appendChild(t);
+                    if (cfg.matnr) {
+                        const m = document.createElement('div');
+                        m.className = 'slot-sub';
+                        m.textContent = 'MatNr ' + cfg.matnr;
+                        inner.appendChild(m);
+                    }
+                    if (cfg.location) {
+                        const l = document.createElement('div');
+                        l.className = 'slot-sub';
+                        l.textContent = applyTextCase(cfg.location, cfg.textCase);
+                        inner.appendChild(l);
+                    }
+                    if (cfg.ghs.length) {
+                        const g = document.createElement('div');
+                        g.className = 'slot-ghs';
+                        cfg.ghs.slice(0, 6).forEach(id => {
+                            const img = document.createElement('img');
+                            img.src = GHS_DATA['ghs_' + id];
+                            g.appendChild(img);
+                        });
+                        inner.appendChild(g);
+                    }
+                } else {
+                    inner.textContent = '+';
+                }
+                slot.appendChild(inner);
+
+                slot.onclick = () => {
+                    const current = getCurrentConfig();
+                    if (slotData[i] && JSON.stringify(slotData[i]) === JSON.stringify(current)) {
+                        if (selectedSlots.has(i)) selectedSlots.delete(i);
+                        else selectedSlots.add(i);
+                    } else {
+                        slotData[i] = current;
+                        selectedSlots.add(i);
+                    }
+                    renderSheet();
+                    renderBatch();
+                };
+                sheetGridEl.appendChild(slot);
+            }
+        }
 
         function renderBatch() {
             batchListEl.innerHTML = '';
-            if (batch.length === 0) {
-                batchListEl.innerHTML = '<p class="text-xs text-gray-400 italic">Bogen ist leer — der Druck-Button verwendet die aktuelle Konfiguration mit Position+Anzahl.</p>';
-                return;
+            const belegt = slotData.filter(Boolean).length;
+            const gedruckt = [...selectedSlots].filter(i => slotData[i]).length;
+            const p = document.createElement('p');
+            p.className = 'text-xs text-gray-500';
+            if (belegt === 0) {
+                p.innerHTML = '<span class="italic">Bogen ist leer.</span> Felder rechts anklicken, um sie mit der aktuellen Konfiguration zu belegen.';
+            } else {
+                p.innerHTML = `<span class="font-bold text-gray-600">${belegt}</span> Feld(er) belegt, <span class="font-bold text-[#064e3b]">${gedruckt}</span> zum Druck ausgewählt.`;
             }
-            const title = document.createElement('p');
-            title.className = 'text-xs font-bold text-gray-600 uppercase mb-2';
-            title.textContent = 'Bogen-Inhalt:';
-            batchListEl.appendChild(title);
-            batch.forEach((item, i) => {
-                const row = document.createElement('div');
-                row.className = 'flex items-center gap-2 bg-gray-50 border border-gray-200 rounded p-2 text-sm';
-                const txt = applyTextCase(item.config.substance || '?', item.config.textCase);
-                const endPos = Math.min(item.startPos + item.count - 1, 12);
-                row.innerHTML = `
-                    <span class="font-bold flex-1 truncate">${txt}</span>
-                    <span class="text-xs text-gray-500 whitespace-nowrap">Pos ${item.startPos}–${endPos}</span>
-                    <button class="text-red-600 font-bold px-2 hover:bg-red-50 rounded" aria-label="Entfernen">✕</button>
-                `;
-                row.querySelector('button').onclick = () => { batch.splice(i, 1); renderBatch(); };
-                batchListEl.appendChild(row);
-            });
+            batchListEl.appendChild(p);
         }
 
+        // ===== Einzel-Vorschau (maßstabsgetreu zu 105 × 41 mm) =====
         function updatePreview() {
             const cfg = getCurrentConfig();
-            const sub = applyTextCase(cfg.substance || "STOFFNAME", cfg.textCase);
-            const loc = applyTextCase(cfg.location || "PROBENAHMESTELLE", cfg.textCase);
-            const smp = applyTextCase(cfg.sampler || "PROBENEHMER", cfg.textCase);
+            const card = document.getElementById('pg-previewCard');
+            const previewWidth = card.offsetWidth || 1;
+            const pxPerMm = previewWidth / LBL_W;
+            const ptToPx = 0.3527 * pxPerMm;
 
-            const previewWidth = document.getElementById('pg-previewCard').offsetWidth || 1;
-            const scale = previewWidth / 99.1;
-            const ptToPx = 0.3527 * scale;
+            // Kopfzeile
+            const headEl = document.getElementById('pg-pHead');
+            if (cfg.head) {
+                headEl.style.display = '';
+                headEl.textContent = cfg.head;
+                headEl.style.fontSize = (7 * ptToPx) + 'px';
+            } else {
+                headEl.style.display = 'none';
+            }
 
             const pSub = document.getElementById('pg-pSubstance');
-            pSub.innerText = sub;
+            pSub.innerText = applyTextCase(cfg.substance || "STOFFNAME", cfg.textCase);
             pSub.style.fontSize = (cfg.sSize * ptToPx) + "px";
+
+            const pMat = document.getElementById('pg-pMatnr');
+            pMat.innerText = cfg.matnr || '—';
+            pMat.style.fontSize = (Math.min(cfg.lSize, 11) * ptToPx) + "px";
+
             const pLoc = document.getElementById('pg-pLocation');
-            pLoc.innerText = loc;
+            pLoc.innerText = applyTextCase(cfg.location || "PROBENAHMESTELLE", cfg.textCase);
             pLoc.style.fontSize = (cfg.lSize * ptToPx) + "px";
+
             const pSmp = document.getElementById('pg-pSampler');
-            pSmp.innerText = smp;
+            pSmp.innerText = applyTextCase(cfg.sampler || "PROBENEHMER", cfg.textCase);
             pSmp.style.fontSize = (cfg.mSize * ptToPx) + "px";
 
             document.getElementById('pg-pSignal').innerText = cfg.signal;
             const dateStr = (cfg.date || '').trim();
-            const dateEl = document.getElementById('pg-pDate');
-            dateEl.innerHTML = dateStr ? `Datum: <b>${dateStr.replace(/</g,'&lt;')}</b>` : 'Datum:&nbsp;________';
+            document.getElementById('pg-pDate').innerHTML =
+                dateStr ? `Datum: <b>${dateStr.replace(/</g,'&lt;')}</b>` : 'Datum:&nbsp;______';
 
-            // Dynamische GHS Größen in Vorschau
+            // GHS maßstabsgetreu (gleiche mm-Werte wie im PDF)
             const ghsZone = document.getElementById('pg-pGhs');
             ghsZone.innerHTML = '';
             const n = cfg.ghs.length;
-            const availPx = previewWidth * 0.55;
-            const fit = fitGhsRow(availPx, n, { idealSize: 30, maxSize: 42, minSize: 14, gap: 4 });
-            cfg.ghs.forEach(id => {
-                const img = document.createElement('img');
-                img.src = GHS_DATA['ghs_' + id];
-                img.style.height = fit.iconSize + 'px';
-                img.style.width = fit.iconSize + 'px';
-                img.style.objectFit = 'contain';
-                ghsZone.appendChild(img);
-            });
-            ghsZone.style.gap = fit.gap + 'px';
+            if (n > 0) {
+                const ghsSize = cfg.head ? 8 : 9;
+                const availMm = cfg.signal ? LBL_W - 34 : LBL_W - 12;
+                const fit = fitGhsRow(availMm, n, { idealSize: ghsSize, maxSize: ghsSize, minSize: 3.5, gap: 1.2 });
+                cfg.ghs.forEach(id => {
+                    const img = document.createElement('img');
+                    img.src = GHS_DATA['ghs_' + id];
+                    img.style.width  = (fit.iconSize * pxPerMm) + 'px';
+                    img.style.height = (fit.iconSize * pxPerMm) + 'px';
+                    ghsZone.appendChild(img);
+                });
+                ghsZone.style.gap = (fit.gap * pxPerMm) + 'px';
+            }
         }
 
-        ['pg-substance','pg-substanceSize','pg-location','pg-locationSize','pg-sampler','pg-samplerSize','pg-date','pg-signal','pg-textCase']
+        ['pg-substance','pg-substanceSize','pg-matnr','pg-location','pg-locationSize',
+         'pg-sampler','pg-samplerSize','pg-date','pg-signal','pg-textCase',
+         'pg-betrieb','pg-abteilung','pg-telefon']
             .forEach(id => document.getElementById(id).addEventListener('input', updatePreview));
+        headEnable.addEventListener('change', () => {
+            headFields.style.display = headEnable.checked ? '' : 'none';
+            updatePreview();
+        });
         window.addEventListener('resize', updatePreview);
 
         document.getElementById('pg-addBtn').onclick = () => {
-            const startPos = parseInt(document.getElementById('pg-startPos').value) || 1;
-            const count = parseInt(document.getElementById('pg-printCount').value) || 1;
             if (!document.getElementById('pg-substance').value.trim()) {
                 alert('Bitte mindestens den Stoffnamen eingeben.'); return;
             }
-            batch.push({ config: getCurrentConfig(), startPos, count });
-            renderBatch();
+            const cfg = getCurrentConfig();
+            for (let i = 0; i < SLOTS; i++) { slotData[i] = cfg; selectedSlots.add(i); }
+            renderSheet(); renderBatch();
+        };
+        document.getElementById('pg-selectAll').onclick = () => {
+            for (let i = 0; i < SLOTS; i++) if (slotData[i]) selectedSlots.add(i);
+            renderSheet(); renderBatch();
+        };
+        document.getElementById('pg-selectNone').onclick = () => {
+            selectedSlots.clear();
+            renderSheet(); renderBatch();
         };
 
+        // ===== PDF: ein Etikett zeichnen =====
         function drawProbeGross(doc, cfg, x, y) {
-            const labelW = 99.1;
-            const labelInsetX = 4;
-            const labelTextStart = labelInsetX + 26;
+            const padX = 4;                       // Innenabstand links/rechts
+            const valX = x + padX + 22;           // Spalte für die Werte
+            const maxValW = LBL_W - (padX + 22) - padX;
+            const hasHead = !!cfg.head;
 
-            const sub = applyTextCase(cfg.substance || '', cfg.textCase);
-            const loc = applyTextCase(cfg.location || '', cfg.textCase);
-            const smp = applyTextCase(cfg.sampler || '', cfg.textCase);
+            // Zeilen-Grundlinien (mm ab Etikett-Oberkante) — kompakt, damit alles auf 41 mm passt
+            const headY   = 3.6;
+            const baseTop = hasHead ? 8.6 : 6.0;
+            const rowGap  = hasHead ? 5.2 : 5.8;
+            const yStoff  = baseTop;
+            const yMat    = baseTop + rowGap;
+            const yStelle = baseTop + rowGap * 2;
+            const yNehmer = baseTop + rowGap * 3;
+            // GHS-Block unten, mit Sicherheitsabstand zur letzten Textzeile
+            const ghsSize = hasHead ? 8 : 9;
+            const ghsTop  = Math.max(yNehmer + 3.2, LBL_H - ghsSize - 3);
 
             const drawLabel = (txt, yPos) => {
-                doc.setFontSize(6);
+                doc.setFontSize(5.5);
                 doc.setFont("helvetica", "bold");
-                doc.setTextColor(80,80,80);
-                doc.text(txt, x + labelInsetX, yPos, { align: 'left', baseline: 'middle' });
+                doc.setTextColor(100,116,139);
+                doc.text(txt, x + padX, y + yPos, { align: 'left', baseline: 'middle' });
                 doc.setTextColor(0,0,0);
             };
 
-            drawLabel("STOFF:", y + 5.5);
-            doc.setFontSize(cfg.sSize);
-            doc.setFont("helvetica", "bold");
-            doc.text(sub, x + labelTextStart, y + 5.5, {
-                align: 'left', baseline: 'middle',
-                maxWidth: labelW - labelTextStart - labelInsetX
-            });
-
-            drawLabel("P.-STELLE:", y + 14);
-            doc.setFontSize(cfg.lSize);
-            doc.setFont("helvetica", "bold");
-            doc.text(loc, x + labelTextStart, y + 14, {
-                align: 'left', baseline: 'middle',
-                maxWidth: labelW - labelTextStart - labelInsetX
-            });
-
-            drawLabel("PROBENEHMER:", y + 22);
-            doc.setFontSize(cfg.mSize);
-            doc.setFont("helvetica", "bold");
-            doc.text(smp, x + labelTextStart, y + 22, {
-                align: 'left', baseline: 'middle',
-                maxWidth: labelW - labelTextStart - 30
-            });
-            doc.setFontSize(7);
-            doc.setFont("helvetica", "normal");
-            const dateStr = (cfg.date || '').trim();
-            if (dateStr) {
+            // Kopfzeile (optional)
+            if (hasHead) {
+                doc.setFontSize(7);
                 doc.setFont("helvetica", "bold");
-                doc.text("Datum: " + dateStr, x + labelW - labelInsetX, y + 22, { align: 'right', baseline: 'middle' });
-            } else {
-                doc.text("Datum: __________", x + labelW - labelInsetX, y + 22, { align: 'right', baseline: 'middle' });
+                doc.setTextColor(51,65,85);
+                doc.text(cfg.head, x + LBL_W / 2, y + headY,
+                    { align: 'center', baseline: 'middle', maxWidth: LBL_W - 2 * padX });
+                doc.setTextColor(0,0,0);
+                doc.setDrawColor(203,213,225);
+                doc.setLineWidth(0.2);
+                doc.line(x + padX, y + headY + 1.9, x + LBL_W - padX, y + headY + 1.9);
             }
 
-            // Dynamische GHS — verfügbar ~70 mm (links neben Signal)
+            drawLabel("STOFF:", yStoff);
+            doc.setFontSize(cfg.sSize);
+            doc.setFont("helvetica", "bold");
+            doc.text(applyTextCase(cfg.substance || '', cfg.textCase), valX, y + yStoff,
+                { align: 'left', baseline: 'middle', maxWidth: maxValW });
+
+            drawLabel("MAT.-NR.:", yMat);
+            doc.setFontSize(Math.min(cfg.lSize, 11));
+            doc.setFont("helvetica", "bold");
+            doc.text(cfg.matnr || '', valX, y + yMat,
+                { align: 'left', baseline: 'middle', maxWidth: maxValW });
+
+            drawLabel("P.-STELLE:", yStelle);
+            doc.setFontSize(cfg.lSize);
+            doc.setFont("helvetica", "bold");
+            doc.text(applyTextCase(cfg.location || '', cfg.textCase), valX, y + yStelle,
+                { align: 'left', baseline: 'middle', maxWidth: maxValW });
+
+            drawLabel("PROBENEHMER:", yNehmer);
+            doc.setFontSize(cfg.mSize);
+            doc.setFont("helvetica", "bold");
+            doc.text(applyTextCase(cfg.sampler || '', cfg.textCase), valX, y + yNehmer,
+                { align: 'left', baseline: 'middle', maxWidth: maxValW - 28 });
+
+            doc.setFontSize(6.5);
+            const dateStr = (cfg.date || '').trim();
+            doc.setFont("helvetica", dateStr ? "bold" : "normal");
+            doc.text(dateStr ? "Datum: " + dateStr : "Datum: ________",
+                x + LBL_W - padX, y + yNehmer, { align: 'right', baseline: 'middle' });
+
+            // GHS + Signalwort
             const n = cfg.ghs.length;
             if (n > 0) {
-                const availMm = cfg.signal ? 65 : 90;
-                const fit = fitGhsRow(availMm, n, { idealSize: 8, maxSize: 11, minSize: 4, gap: 1.5 });
-                let gx = x + labelInsetX;
-                const gy = y + 33 - fit.iconSize / 2;
+                const availMm = cfg.signal ? LBL_W - 34 : LBL_W - 12;
+                const fit = fitGhsRow(availMm, n, { idealSize: ghsSize, maxSize: ghsSize, minSize: 3.5, gap: 1.2 });
+                let gx = x + padX;
                 cfg.ghs.forEach(id => {
-                    doc.addImage(GHS_DATA['ghs_' + id], 'PNG', gx, gy, fit.iconSize, fit.iconSize);
+                    doc.addImage(GHS_DATA['ghs_' + id], 'PNG', gx, y + ghsTop, fit.iconSize, fit.iconSize);
                     gx += fit.iconSize + fit.gap;
                 });
             }
             if (cfg.signal) {
-                doc.setFontSize(7);
+                doc.setFontSize(8);
                 doc.setFont("helvetica", "bolditalic");
-                doc.text(cfg.signal, x + labelW - labelInsetX, y + 39, { align: 'right', baseline: 'middle' });
+                doc.text(cfg.signal, x + LBL_W - padX, y + ghsTop + ghsSize / 2,
+                    { align: 'right', baseline: 'middle' });
             }
         }
 
         document.getElementById('pg-pdfBtn').onclick = () => {
-          confirmPrint('Avery L4743REV (12 Etiketten / A4)', () => {
+          const toPrint = [...selectedSlots].filter(i => slotData[i]);
+          if (toPrint.length === 0) {
+              alert('Keine Felder zum Druck ausgewählt. Felder in der Bogen-Übersicht anklicken.');
+              return;
+          }
+          confirmPrint('Avery Zweckform 3477 (105 × 41 mm · 14 Etiketten / A4)', () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-            const labelW = 99.1, labelH = 42.3;
-            const leftMargin = 5.9, topMargin = 21.6;
-            const slots = new Array(12).fill(null);
+            const calX = parseFloat(document.getElementById('pg-calibX').value) || 0;
+            const calY = parseFloat(document.getElementById('pg-calibY').value) || 0;
 
-            if (batch.length === 0) {
-                const startPos = parseInt(document.getElementById('pg-startPos').value) || 1;
-                const count = parseInt(document.getElementById('pg-printCount').value) || 12;
-                const cfg = getCurrentConfig();
-                for (let p = startPos; p < startPos + count && p <= 12; p++) slots[p - 1] = cfg;
-            } else {
-                batch.forEach(item => {
-                    for (let p = item.startPos; p < item.startPos + item.count && p <= 12; p++) slots[p - 1] = item.config;
-                });
-            }
-
-            for (let i = 0; i < 12; i++) {
-                if (!slots[i]) continue;
-                const x = leftMargin + ((i % 2) * labelW);
-                const y = topMargin + (Math.floor(i / 2) * labelH);
-                drawProbeGross(doc, slots[i], x, y);
-            }
-            doc.save(`Probegross_Bogen.pdf`);
+            toPrint.forEach(i => {
+                const x = SHEET_LEFT + (i % COLS) * LBL_W + calX;
+                const y = SHEET_TOP  + Math.floor(i / COLS) * LBL_H + calY;
+                drawProbeGross(doc, slotData[i], x, y);
+            });
+            doc.save('Probegross_Bogen.pdf');
           });
         };
 
+        renderSheet();
         renderBatch();
         updatePreview();
     })();
