@@ -275,6 +275,17 @@
             flex:1.25 1 0; display:flex; align-items:center;
             justify-content:space-between; gap:6px; min-height:0; padding-top:2px;
         }
+        #view-probegross .pg-foot {
+            flex:0 0 auto; width:100%; display:flex; align-items:center;
+            justify-content:space-between; gap:4px;
+            border-top:1px solid #cbd5e1; padding-top:1.5%; margin-top:1%;
+            font-weight:700; color:#334155; line-height:1;
+            white-space:nowrap; overflow:hidden;
+        }
+        #view-probegross .pg-foot span { overflow:hidden; text-overflow:ellipsis; }
+        #view-probegross .pg-foot .ft-l { text-align:left; }
+        #view-probegross .pg-foot .ft-c { text-align:center; }
+        #view-probegross .pg-foot .ft-r { text-align:right; }
         #view-probegross .pg-ghs { display:flex; align-items:center; overflow:hidden; }
         #view-probegross .pg-ghs img { object-fit:contain; }
         #view-probegross .pg-signal {
@@ -342,11 +353,19 @@
             overflow:hidden; line-height:1; font-weight:900; font-size:11px; text-align:center;
         }
         #view-lolc .lolc-slot.empty .slot-inner { color:#cbd5e1; font-size:16px; font-weight:300; }
-        #view-lolc .lolc-slot.c-lo { background:#22c55e; color:#000; }
-        #view-lolc .lolc-slot.c-lc { background:#ef4444; color:#fff; }
+        /* Farbfläche eingerückt -> weißer Rand bleibt sichtbar (wie im Druck) */
+        #view-lolc .lolc-slot.c-lo,
+        #view-lolc .lolc-slot.c-lc,
         #view-lolc .lolc-slot.c-no,
         #view-lolc .lolc-slot.c-nc,
-        #view-lolc .lolc-slot.c-ea { background:#fff; color:#000; border-color:#e5e7eb; }
+        #view-lolc .lolc-slot.c-ea { background:#fff; }
+        #view-lolc .lolc-slot { padding:1.2%; }
+        #view-lolc .lolc-slot .slot-inner { box-sizing:border-box; }
+        #view-lolc .lolc-slot.c-lo .slot-inner { background:#22c55e; color:#000; }
+        #view-lolc .lolc-slot.c-lc .slot-inner { background:#ef4444; color:#fff; }
+        #view-lolc .lolc-slot.c-no .slot-inner,
+        #view-lolc .lolc-slot.c-nc .slot-inner,
+        #view-lolc .lolc-slot.c-ea .slot-inner { background:#fff; color:#000; outline:1px solid #e5e7eb; outline-offset:-1px; }
         /* ===== Schild ohne Träger — Bogen-Übersicht (A4) ===== */
         #view-schilderot .sot-sheet {
             width:100%; max-width:360px; margin:0 auto; aspect-ratio:210 / 297;
@@ -409,6 +428,18 @@
             flex:0.8; display:flex; align-items:flex-start; justify-content:center;
             font-weight:bold; font-size:1.1rem; text-align:center; padding-top:5px;
         }
+        /* Schmale Fußzeile (Abteilung / Telefon / Bau) */
+        .a6-zone-foot {
+            flex:0 0 auto; width:100%; display:flex; align-items:center;
+            justify-content:space-between; gap:6px;
+            border-top:1px solid currentColor; margin-top:4px; padding-top:3px;
+            font-weight:700; line-height:1; white-space:nowrap; overflow:hidden;
+        }
+        .a6-zone-foot span { overflow:hidden; text-overflow:ellipsis; }
+        .a6-zone-foot .ft-l { text-align:left; }
+        .a6-zone-foot .ft-c { text-align:center; }
+        .a6-zone-foot .ft-r { text-align:right; }
+
         .bg-fill-white { background:#fff; color:#000; }
         .bg-fill-yellow { background:#fde047; color:#000; }
         .bg-fill-red { background:#ef4444; color:#fff; }
@@ -546,12 +577,23 @@
             width:100%; max-width:500px; aspect-ratio:991/423;
             background:white; border:1px solid #ddd; overflow:hidden;
         }
+        /* Weißer Sicherheitsrand rundum (1,2 mm bei 99,1 mm Etikettenbreite ≈ 1,2 %):
+           äußerer Kasten bleibt weiß, die Farbfläche sitzt eingerückt darin. */
         #view-lolc .label-canvas {
+            width:100%; height:100%; box-sizing:border-box;
+            padding:1.2%; background:#fff !important; color:#000 !important;
+        }
+        #view-lolc .label-canvas > span {
             width:100%; height:100%; display:flex; align-items:center; justify-content:center;
             text-align:center; font-weight:900;
             font-family:'Helvetica','Arial',sans-serif !important;
-            padding:10px; box-sizing:border-box; white-space:nowrap;
+            padding:8px; box-sizing:border-box; white-space:nowrap;
         }
+        #view-lolc .label-canvas.color-lo > span { background:#22c55e; color:#000; }
+        #view-lolc .label-canvas.color-lc > span { background:#ef4444; color:#fff; }
+        #view-lolc .label-canvas.color-no > span,
+        #view-lolc .label-canvas.color-nc > span,
+        #view-lolc .label-canvas.color-ea > span { background:#fff; color:#000; outline:1px solid #e5e7eb; outline-offset:-1px; }
         #view-lolc #pText {
             font-family:'Helvetica','Arial',sans-serif !important; font-weight:900;
         }
@@ -667,9 +709,29 @@
             box-sizing:border-box;
         }
         #view-ordner .or-lineRow {
-            display:grid; grid-template-columns:1fr 58px 78px 32px 30px;
-            gap:5px; align-items:center; margin-bottom:5px;
+            display:grid; grid-template-columns:1fr 52px 74px 46px 28px 28px;
+            gap:4px; align-items:center; margin-bottom:5px;
         }
+        #view-ordner .or-lineRow input:disabled {
+            background:#f1f5f9; color:#94a3b8; cursor:not-allowed;
+        }
+        /* Zeile mit Bild statt Text */
+        #view-ordner .or-imgRow { grid-template-columns:1fr 52px 46px 28px; }
+        #view-ordner .or-imgPick {
+            display:flex; align-items:center; gap:6px; min-width:0;
+            border:1px dashed #cbd5e1; border-radius:5px; background:#f8fafc;
+            padding:3px 6px; cursor:pointer; height:34px; box-sizing:border-box;
+        }
+        #view-ordner .or-imgPick:hover { border-color:#064e3b; background:#f0fdf4; }
+        #view-ordner .or-imgPick img {
+            height:24px; width:34px; object-fit:contain; flex-shrink:0; background:#fff;
+        }
+        #view-ordner .or-imgPick span {
+            font-size:.7rem; font-weight:700; color:#64748b;
+            overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+        }
+        #view-ordner .or-line-img { display:flex; justify-content:center; width:100%; }
+        #view-ordner .or-line-img img { object-fit:contain; max-width:100%; }
         #view-ordner .or-lineRow input[type=text] { min-width:0; }
         #view-ordner .or-lineRow .or-del {
             color:#dc2626; font-weight:700; border:1px solid #fecaca;
@@ -1134,6 +1196,17 @@
                     <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Unten (Sonstiges)</label>
                     <input type="text" id="kan-botText" class="w-full p-3 border-2 rounded-md font-bold outline-none focus:border-[#064e3b]" placeholder="Zusatzinfo...">
                 </div>
+                <div class="p-3 bg-gray-50 rounded-md border-2">
+                    <label class="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase cursor-pointer">
+                        <input type="checkbox" id="kan-footEnable" class="accent-[#064e3b] w-4 h-4">
+                        Fußzeile drucken (Abteilung / Telefon / Bau)
+                    </label>
+                    <div id="kan-footFields" class="grid grid-cols-3 gap-2 mt-3" style="display:none;">
+                        <input type="text" id="kan-abteilung" maxlength="18" class="p-2 border rounded font-bold text-sm" placeholder="Abteilung">
+                        <input type="text" id="kan-telefon" maxlength="14" class="p-2 border rounded font-bold text-sm" placeholder="Telefon">
+                        <input type="text" id="kan-bau" maxlength="14" class="p-2 border rounded font-bold text-sm" placeholder="Bau">
+                    </div>
+                </div>
             </div>
             <button id="kan-pdfBtn" class="w-full bg-[#064e3b] text-white py-4 rounded-md font-black text-2xl hover:bg-green-800 transition-all shadow-md mt-8 tracking-widest uppercase">
                 4 ETIKETTEN DRUCKEN
@@ -1147,6 +1220,11 @@
                     <div id="kan-pGhs" class="a6-zone-ghs"></div>
                     <div id="kan-pSignal" class="a6-zone-signal"></div>
                     <div id="kan-pBot" class="a6-zone-bot">Sonstiges</div>
+                    <div id="kan-pFoot" class="a6-zone-foot" style="display:none;">
+                        <span class="ft-l" id="kan-pFootA"></span>
+                        <span class="ft-c" id="kan-pFootB"></span>
+                        <span class="ft-r" id="kan-pFootC"></span>
+                    </div>
                 </div>
             </div>
             <p class="mt-6 text-xs text-gray-500 text-center uppercase">A4 Querformat — 4 Schilder</p>
@@ -1234,11 +1312,11 @@
         <section class="bg-white p-6 rounded-lg shadow-xl border border-gray-200">
             <h2 class="text-lg font-bold border-b pb-2 mb-4 uppercase text-gray-700">Probe Groß (Avery 3477) — 14 Etiketten / Bogen</h2>
             <div class="space-y-4">
-                <!-- Optionale Kopfzeile: Betrieb / Abteilung / Telefon -->
+                <!-- Optionale Fußzeile: Betrieb / Abteilung / Telefon -->
                 <div class="bg-gray-50 p-3 rounded border">
                     <label class="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase cursor-pointer">
                         <input type="checkbox" id="pg-headEnable" class="accent-[#064e3b] w-4 h-4">
-                        Kopfzeile drucken (Betrieb / Abteilung / Telefon)
+                        Fußzeile drucken (Betrieb / Abteilung / Telefon)
                     </label>
                     <div id="pg-headFields" class="grid grid-cols-3 gap-2 mt-3" style="display:none;">
                         <input type="text" id="pg-betrieb" class="p-2 border rounded font-bold text-sm" placeholder="Betrieb">
@@ -1326,7 +1404,6 @@
             <span class="text-sm font-bold text-gray-400 mb-3 uppercase tracking-widest">Vorschau (105 × 41 mm)</span>
             <div class="pg-preview-wrap shadow-2xl">
                 <div id="pg-previewCard" class="pg-label">
-                    <div id="pg-pHead" class="pg-head" style="display:none;"></div>
                     <div class="pg-row">
                         <span class="pg-rlabel">Stoff:</span>
                         <span id="pg-pSubstance" class="pg-rval">STOFFNAME</span>
@@ -1347,6 +1424,11 @@
                     <div class="pg-bottom">
                         <div id="pg-pGhs" class="pg-ghs"></div>
                         <div id="pg-pSignal" class="pg-signal"></div>
+                    </div>
+                    <div id="pg-pHead" class="pg-foot" style="display:none;">
+                        <span class="ft-l" id="pg-pFootA"></span>
+                        <span class="ft-c" id="pg-pFootB"></span>
+                        <span class="ft-r" id="pg-pFootC"></span>
                     </div>
                 </div>
             </div>
@@ -1495,6 +1577,17 @@
                     <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">4. Unten (Sonstiges)</label>
                     <input type="text" id="hob-botText" class="w-full p-3 border-2 rounded-md font-bold outline-none focus:border-[#064e3b]" placeholder="z.B. Nur für interne Zwecke">
                 </div>
+                <div class="p-3 bg-gray-50 rounded-md border-2">
+                    <label class="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase cursor-pointer">
+                        <input type="checkbox" id="hob-footEnable" class="accent-[#064e3b] w-4 h-4">
+                        Fußzeile drucken (Abteilung / Telefon / Bau)
+                    </label>
+                    <div id="hob-footFields" class="grid grid-cols-3 gap-2 mt-3" style="display:none;">
+                        <input type="text" id="hob-abteilung" maxlength="18" class="p-2 border rounded font-bold text-sm" placeholder="Abteilung">
+                        <input type="text" id="hob-telefon" maxlength="14" class="p-2 border rounded font-bold text-sm" placeholder="Telefon">
+                        <input type="text" id="hob-bau" maxlength="14" class="p-2 border rounded font-bold text-sm" placeholder="Bau">
+                    </div>
+                </div>
             </div>
             <button id="hob-pdfBtn" class="w-full bg-[#064e3b] text-white py-4 rounded-md font-black text-2xl hover:bg-green-800 transition-all shadow-md mt-8 tracking-widest uppercase">
                 4 SCHILDER DRUCKEN (A4)
@@ -1508,6 +1601,11 @@
                     <div id="hob-pGhs" class="a6-zone-ghs"></div>
                     <div id="hob-pSignal" class="a6-zone-signal"></div>
                     <div id="hob-pBot" class="a6-zone-bot">Sonstiges</div>
+                    <div id="hob-pFoot" class="a6-zone-foot" style="display:none;">
+                        <span class="ft-l" id="hob-pFootA"></span>
+                        <span class="ft-c" id="hob-pFootB"></span>
+                        <span class="ft-r" id="hob-pFootC"></span>
+                    </div>
                 </div>
             </div>
             <p class="mt-6 text-xs text-gray-500 text-center uppercase">A4 Querformat — 4 Schilder</p>
@@ -1877,12 +1975,23 @@
 
                 <div>
                     <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Ordner-Format</label>
-                    <select id="or-format" class="w-full p-3 border-2 rounded-md font-bold text-sm">
-                        <option value="breit-lang">Breit / Lang — 61 × 192 mm (8 cm Ordner)</option>
-                        <option value="breit-kurz">Breit / Kurz — 61 × 155 mm (8 cm Ordner)</option>
-                        <option value="schmal-lang">Schmal / Lang — 38 × 192 mm (5 cm Ordner)</option>
-                        <option value="schmal-kurz">Schmal / Kurz — 38 × 155 mm (5 cm Ordner)</option>
+                    <select id="or-format" class="hidden" style="display:none">
+                        <option value="breit-lang">Breit / Lang</option>
+                        <option value="breit-kurz">Breit / Kurz</option>
+                        <option value="schmal-lang">Schmal / Lang</option>
+                        <option value="schmal-kurz">Schmal / Kurz</option>
                     </select>
+
+                    <div class="ts-seg" id="or-widthPicker">
+                        <button type="button" data-w="breit" class="active">Breiter Ordner<br><span class="font-normal text-[11px]">8 cm Rücken · 61 mm</span></button>
+                        <button type="button" data-w="schmal">Schmaler Ordner<br><span class="font-normal text-[11px]">5 cm Rücken · 39 mm</span></button>
+                    </div>
+
+                    <label class="block text-xs font-bold mt-3 mb-1 text-gray-500 uppercase">Länge</label>
+                    <div class="ts-seg" id="or-lenPicker">
+                        <button type="button" data-l="lang" class="active">Lang · 192 mm</button>
+                        <button type="button" data-l="kurz">Kurz · 155 mm</button>
+                    </div>
                 </div>
 
                 <div class="p-3 bg-amber-50 rounded-md border-2 border-amber-200">
@@ -1890,11 +1999,11 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-[11px] font-bold mb-1 text-gray-500 uppercase">Breite −</label>
-                            <input type="number" id="or-shrinkW" step="0.5" min="0" max="6" value="1.5" class="w-full p-2 border rounded font-bold">
+                            <input type="number" id="or-shrinkW" step="0.5" min="0" max="8" value="2.5" class="w-full p-2 border rounded font-bold">
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold mb-1 text-gray-500 uppercase">Höhe −</label>
-                            <input type="number" id="or-shrinkH" step="0.5" min="0" max="6" value="1" class="w-full p-2 border rounded font-bold">
+                            <input type="number" id="or-shrinkH" step="0.5" min="-4" max="8" value="0" class="w-full p-2 border rounded font-bold">
                         </div>
                     </div>
                     <p id="or-sizeInfo" class="text-[11px] text-amber-800 mt-2 font-bold"></p>
@@ -1914,12 +2023,24 @@
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <label class="text-xs font-bold text-gray-500 uppercase">Textzeilen</label>
-                        <button type="button" id="or-addLine" class="text-xs font-bold text-[#064e3b] border border-[#064e3b] rounded px-2 py-1 hover:bg-green-50">+ Zeile</button>
+                        <div class="flex gap-2">
+                            <button type="button" id="or-addLine" class="text-xs font-bold text-[#064e3b] border border-[#064e3b] rounded px-2 py-1 hover:bg-green-50">+ Zeile</button>
+                            <button type="button" id="or-addImage" class="text-xs font-bold text-[#064e3b] border border-[#064e3b] rounded px-2 py-1 hover:bg-green-50">+ Bild</button>
+                        </div>
                     </div>
-                    <div class="hidden sm:grid grid-cols-[1fr_58px_78px_32px_30px] gap-[5px] text-[10px] font-bold text-gray-400 uppercase mb-1 px-1">
-                        <span>Text</span><span>pt</span><span>Schrift</span><span>F</span><span></span>
+                    <div class="hidden sm:grid grid-cols-[1fr_52px_74px_46px_28px_28px] gap-[4px] text-[10px] font-bold text-gray-400 uppercase mb-1 px-1">
+                        <span>Text</span><span>pt</span><span>Schrift</span><span title="Abstand über der Zeile in mm">Abst.</span><span>F</span><span></span>
                     </div>
                     <div id="or-lines"></div>
+                    <p id="or-lineHint" class="text-[11px] text-gray-500 mt-2"></p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold mb-1 text-gray-500 uppercase">Zeilen-Verteilung</label>
+                    <select id="or-dist" class="w-full p-2 border-2 rounded font-bold text-sm">
+                        <option value="even" selected>Gleichmäßig verteilt (max. 5 Zeilen)</option>
+                        <option value="free">Frei — Abstand je Zeile selbst wählen</option>
+                    </select>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
@@ -2756,6 +2877,61 @@
     /* ============================================================
        KANISTER
        ============================================================ */
+    /* ============================================================
+       UTIL: schmale Fußzeile (Abteilung / Telefon / Bau) für A6-Etiketten
+       ============================================================ */
+    function footState(prefix) {
+        const on = document.getElementById(prefix + '-footEnable');
+        if (!on || !on.checked) return null;
+        const g = id => (document.getElementById(prefix + '-' + id).value || '').trim();
+        const parts = { a: g('abteilung'), b: g('telefon'), c: g('bau') };
+        if (!parts.a && !parts.b && !parts.c) return null;
+        return parts;
+    }
+
+    // Fußzeile im PDF: über die volle Breite verteilt (links / mitte / rechts)
+    function drawFooterRow(doc, foot, x, w, y, ptSize, padX) {
+        if (!foot) return;
+        const pad = padX == null ? 6 : padX;
+        doc.setFontSize(ptSize);
+        doc.setFont('helvetica', 'bold');
+        const left = x + pad, right = x + w - pad;
+        // Trennlinie darüber
+        doc.setLineWidth(0.3);
+        doc.line(left, y - ptSize * 0.3527 - 1.2, right, y - ptSize * 0.3527 - 1.2);
+        if (foot.a) doc.text(foot.a, left,  y, { align: 'left',   baseline: 'middle' });
+        if (foot.b) doc.text(foot.b, (left + right) / 2, y, { align: 'center', baseline: 'middle' });
+        if (foot.c) doc.text(foot.c, right, y, { align: 'right',  baseline: 'middle' });
+    }
+
+    // Fußzeile in der Vorschau aktualisieren
+    function renderFooterPreview(prefix, pxPerMm, ptSize) {
+        const box = document.getElementById(prefix + '-pFoot');
+        if (!box) return;
+        const foot = footState(prefix);
+        if (!foot) { box.style.display = 'none'; return; }
+        box.style.display = '';
+        box.style.fontSize = (ptSize * 0.3527 * pxPerMm) + 'px';
+        document.getElementById(prefix + '-pFootA').textContent = foot.a || '';
+        document.getElementById(prefix + '-pFootB').textContent = foot.b || '';
+        document.getElementById(prefix + '-pFootC').textContent = foot.c || '';
+    }
+
+    // Checkbox koppelt Eingabefelder + Vorschau
+    function wireFooter(prefix, onChange) {
+        const cb = document.getElementById(prefix + '-footEnable');
+        const fields = document.getElementById(prefix + '-footFields');
+        if (!cb || !fields) return;
+        cb.addEventListener('change', () => {
+            fields.style.display = cb.checked ? '' : 'none';
+            onChange();
+        });
+        ['abteilung', 'telefon', 'bau'].forEach(k => {
+            const el = document.getElementById(prefix + '-' + k);
+            if (el) el.addEventListener('input', onChange);
+        });
+    }
+
     (function initKanister(){
         let selectedGhs = [];
         buildGhsPicker('kan-ghsPicker', 9, (sel) => { selectedGhs = sel; updatePreview(); });
@@ -2777,6 +2953,7 @@
             const previewWidth = card.offsetWidth || 1;
             const scaleFactor = previewWidth / 148.5;
             document.getElementById('kan-pTop').style.fontSize = (fontSize * 0.3527 * scaleFactor) + "px";
+            renderFooterPreview('kan', scaleFactor, 9);
 
             // Dynamische GHS Größe in Vorschau
             const ghsZone = document.getElementById('kan-pGhs');
@@ -2797,6 +2974,7 @@
 
         ['kan-bgColor','kan-topText','kan-signal','kan-botText','kan-fontSize']
             .forEach(id => document.getElementById(id).addEventListener('input', updatePreview));
+        wireFooter('kan', updatePreview);
         window.addEventListener('resize', updatePreview);
 
         document.getElementById('kan-pdfBtn').onclick = () => {
@@ -2815,6 +2993,7 @@
                 };
                 const isDark = ['red', 'blue', 'brown', 'violet'].includes(color);
                 const textColor = isDark ? 255 : 0;
+                const foot = footState('kan');
 
                 for (let i = 0; i < 4; i++) {
                     const x = (i % 2) * 148.5;
@@ -2846,8 +3025,11 @@
                     }
                     if (botText) {
                         doc.setFontSize(12); doc.setFont("helvetica", "bold");
-                        doc.text(botText, cx, y + 90, { align: 'center', maxWidth: 135 });
+                        doc.text(botText, cx, y + (foot ? 84 : 90), { align: 'center', maxWidth: 135 });
                     }
+                    doc.setTextColor(textColor);
+                    doc.setDrawColor(textColor);
+                    drawFooterRow(doc, foot, x, 148.5, y + 98, 9, 8);
                 }
                 doc.save("Kanister_Labels.pdf");
             } catch (error) {
@@ -3028,14 +3210,13 @@
         const headEnable  = document.getElementById('pg-headEnable');
         const headFields  = document.getElementById('pg-headFields');
 
+        // Fußzeile als drei Einzelfelder — im Druck über die volle Breite verteilt
         function headText() {
-            if (!headEnable.checked) return '';
-            const parts = [
-                document.getElementById('pg-betrieb').value.trim(),
-                document.getElementById('pg-abteilung').value.trim(),
-                document.getElementById('pg-telefon').value.trim()
-            ].filter(Boolean);
-            return parts.join(' / ');
+            if (!headEnable.checked) return null;
+            const v = id => (document.getElementById(id).value || '').trim();
+            const parts = { a: v('pg-betrieb'), b: v('pg-abteilung'), c: v('pg-telefon') };
+            if (!parts.a && !parts.b && !parts.c) return null;
+            return parts;
         }
 
         function getCurrentConfig() {
@@ -3145,12 +3326,14 @@
             const pxPerMm = previewWidth / LBL_W;
             const ptToPx = 0.3527 * pxPerMm;
 
-            // Kopfzeile
+            // Fußzeile (unterste Zeile, über die volle Breite verteilt)
             const headEl = document.getElementById('pg-pHead');
             if (cfg.head) {
                 headEl.style.display = '';
-                headEl.textContent = cfg.head;
                 headEl.style.fontSize = (7 * ptToPx) + 'px';
+                document.getElementById('pg-pFootA').textContent = cfg.head.a || '';
+                document.getElementById('pg-pFootB').textContent = cfg.head.b || '';
+                document.getElementById('pg-pFootC').textContent = cfg.head.c || '';
             } else {
                 headEl.style.display = 'none';
             }
@@ -3230,16 +3413,16 @@
             const hasHead = !!cfg.head;
 
             // Zeilen-Grundlinien (mm ab Etikett-Oberkante) — kompakt, damit alles auf 41 mm passt
-            const headY   = 3.6;
-            const baseTop = hasHead ? 8.6 : 6.0;
+            const footH   = hasHead ? 5.0 : 0;    // Platz für die Fußzeile ganz unten
+            const baseTop = 6.0;
             const rowGap  = hasHead ? 5.2 : 5.8;
             const yStoff  = baseTop;
             const yMat    = baseTop + rowGap;
             const yStelle = baseTop + rowGap * 2;
             const yNehmer = baseTop + rowGap * 3;
-            // GHS-Block unten, mit Sicherheitsabstand zur letzten Textzeile
-            const ghsSize = hasHead ? 8 : 9;
-            const ghsTop  = Math.max(yNehmer + 3.2, LBL_H - ghsSize - 3);
+            // GHS-Block über der Fußzeile, mit Sicherheitsabstand zur letzten Textzeile
+            const ghsSize = hasHead ? 7.5 : 9;
+            const ghsTop  = Math.max(yNehmer + 3.0, LBL_H - footH - ghsSize - 2.5);
 
             const drawLabel = (txt, yPos) => {
                 doc.setFontSize(5.5);
@@ -3249,17 +3432,20 @@
                 doc.setTextColor(0,0,0);
             };
 
-            // Kopfzeile (optional)
+            // Fußzeile (optional) — Betrieb links, Abteilung mittig, Telefon rechts
             if (hasHead) {
+                const fy = y + LBL_H - 2.6;
                 doc.setFontSize(7);
                 doc.setFont("helvetica", "bold");
                 doc.setTextColor(51,65,85);
-                doc.text(cfg.head, x + LBL_W / 2, y + headY,
-                    { align: 'center', baseline: 'middle', maxWidth: LBL_W - 2 * padX });
-                doc.setTextColor(0,0,0);
                 doc.setDrawColor(203,213,225);
                 doc.setLineWidth(0.2);
-                doc.line(x + padX, y + headY + 1.9, x + LBL_W - padX, y + headY + 1.9);
+                doc.line(x + padX, fy - 3.4, x + LBL_W - padX, fy - 3.4);
+                const fl = x + padX, fr = x + LBL_W - padX;
+                if (cfg.head.a) doc.text(cfg.head.a, fl, fy, { align:'left',   baseline:'middle' });
+                if (cfg.head.b) doc.text(cfg.head.b, (fl + fr) / 2, fy, { align:'center', baseline:'middle' });
+                if (cfg.head.c) doc.text(cfg.head.c, fr, fy, { align:'right',  baseline:'middle' });
+                doc.setTextColor(0,0,0);
             }
 
             drawLabel("STOFF:", yStoff);
@@ -3520,6 +3706,7 @@
             const previewWidth = card.offsetWidth || 1;
             const scaleFactor = previewWidth / 148.5;
             document.getElementById('hob-pTop').style.fontSize = (fontSize * 0.3527 * scaleFactor) + "px";
+            renderFooterPreview('hob', scaleFactor, 9);
 
             // Dynamische GHS Größen in Vorschau
             const ghsZone = document.getElementById('hob-pGhs');
@@ -3540,6 +3727,7 @@
 
         ['hob-bgColor','hob-topText','hob-signal','hob-botText','hob-fontSize']
             .forEach(id => document.getElementById(id).addEventListener('input', updatePreview));
+        wireFooter('hob', updatePreview);
         window.addEventListener('resize', updatePreview);
 
         document.getElementById('hob-pdfBtn').onclick = () => {
@@ -3558,6 +3746,7 @@
                 };
                 const isDark = ['red', 'blue', 'brown', 'violet'].includes(color);
                 const textColor = isDark ? 255 : 0;
+                const foot = footState('hob');
 
                 for (let i = 0; i < 4; i++) {
                     const x = (i % 2) * 148.5;
@@ -3587,8 +3776,11 @@
                     }
                     if (botText) {
                         doc.setFontSize(12); doc.setFont("helvetica", "bold");
-                        doc.text(botText, cx, y + 90, { align: 'center', maxWidth: 135 });
+                        doc.text(botText, cx, y + (foot ? 84 : 90), { align: 'center', maxWidth: 135 });
                     }
+                    doc.setTextColor(textColor);
+                    doc.setDrawColor(textColor);
+                    drawFooterRow(doc, foot, x, 148.5, y + 98, 9, 8);
                 }
                 doc.save("Hobbock_Labels.pdf");
             } catch (error) {
@@ -3794,6 +3986,9 @@
         // ===== Auto-Fit Schriftgröße =====
         // Etikett 99,1 × 42,3 mm — Text muss immer komplett hineinpassen.
         const LOLC_W = 99.1, LOLC_H = 42.3;
+        // Weißer Rand rundum — verhindert, dass beim Bogen mit mehreren Farben
+        // die Farbe des Nachbarfeldes am Schnittrand mitgedruckt wird
+        const LOLC_BORDER_MM = 1.2;
         const LOLC_PAD_X = 6;   // mm Innenabstand links/rechts
         const LOLC_PAD_Y = 7;   // mm Innenabstand oben/unten
 
@@ -3945,8 +4140,9 @@
             // Auto-Fit: Schrift so groß wie möglich, aber immer vollständig im Etikett
             const previewWidth = pCard.offsetWidth || 1;
             const pxPerMm = previewWidth / LOLC_W;
-            const maxWpx = (LOLC_W - 2 * LOLC_PAD_X) * pxPerMm;
-            const maxHpx = (LOLC_H - 2 * LOLC_PAD_Y) * pxPerMm;
+            // weißer Rand (1,2 mm) wird wie im Druck vom nutzbaren Bereich abgezogen
+            const maxWpx = (LOLC_W - 2 * LOLC_BORDER_MM - 2 * LOLC_PAD_X) * pxPerMm;
+            const maxHpx = (LOLC_H - 2 * LOLC_BORDER_MM - 2 * LOLC_PAD_Y) * pxPerMm;
             pText.style.fontSize = autoFitPx(pText.innerText, maxWpx, maxHpx) + "px";
             pText.style.whiteSpace = 'nowrap';
         }
@@ -4009,16 +4205,31 @@
         };
 
         function drawLolc(doc, statusType, fullText, x, y) {
-            const labelW = LOLC_W, labelH = LOLC_H;
+            const labelW = LOLC_W, labelH = LOLC_H, b = LOLC_BORDER_MM;
             const cfg = COLORS[statusType];
-            doc.setFillColor(cfg.bg[0], cfg.bg[1], cfg.bg[2]);
+
+            // gesamtes Feld weiß, farbige Fläche eingerückt
+            doc.setFillColor(255, 255, 255);
             doc.rect(x, y, labelW, labelH, 'F');
+
+            const ix = x + b, iy = y + b, iw = labelW - 2 * b, ih = labelH - 2 * b;
+            doc.setFillColor(cfg.bg[0], cfg.bg[1], cfg.bg[2]);
+            doc.rect(ix, iy, iw, ih, 'F');
+
+            // weiße Etiketten: dünner grauer Rahmen zur Abgrenzung
+            const isWhite = cfg.bg[0] === 255 && cfg.bg[1] === 255 && cfg.bg[2] === 255;
+            if (isWhite) {
+                doc.setDrawColor(210, 210, 210);
+                doc.setLineWidth(0.2);
+                doc.rect(ix, iy, iw, ih, 'S');
+            }
+
             doc.setTextColor(cfg.text[0], cfg.text[1], cfg.text[2]);
-            // Auto-Fit: passt garantiert ins Etikett
-            const fs = autoFitPt(doc, fullText, labelW - 2 * LOLC_PAD_X, labelH - 2 * LOLC_PAD_Y);
+            // Auto-Fit innerhalb der farbigen Fläche
+            const fs = autoFitPt(doc, fullText, iw - 2 * LOLC_PAD_X, ih - 2 * LOLC_PAD_Y);
             doc.setFont("helvetica", "bold");
             doc.setFontSize(fs);
-            doc.text(fullText, x + (labelW / 2), y + (labelH / 2), { align: 'center', baseline: 'middle' });
+            doc.text(fullText, ix + iw / 2, iy + ih / 2, { align: 'center', baseline: 'middle' });
             doc.setTextColor(0,0,0);
         }
 
@@ -4437,10 +4648,10 @@
     (function initOrdner(){
         // Standardmaße gängiger Rückenschilder (mm)
         const FORMATS = {
-            'breit-lang':  { w:61, h:192, label:'Breit / Lang · 61 × 192 mm' },
-            'breit-kurz':  { w:61, h:155, label:'Breit / Kurz · 61 × 155 mm' },
-            'schmal-lang': { w:38, h:192, label:'Schmal / Lang · 38 × 192 mm' },
-            'schmal-kurz': { w:38, h:155, label:'Schmal / Kurz · 38 × 155 mm' }
+            'breit-lang':  { w:61, h:192, label:'Breiter Ordner (8 cm) · lang · 61 × 192 mm' },
+            'breit-kurz':  { w:61, h:155, label:'Breiter Ordner (8 cm) · kurz · 61 × 155 mm' },
+            'schmal-lang': { w:39, h:192, label:'Schmaler Ordner (5 cm) · lang · 39 × 192 mm' },
+            'schmal-kurz': { w:39, h:155, label:'Schmaler Ordner (5 cm) · kurz · 39 × 155 mm' }
         };
         // jsPDF-Standardfonts + passende CSS-Entsprechung für die Vorschau
         const FONTS = {
@@ -4455,12 +4666,14 @@
 
         let logoData = null;        // nur im Arbeitsspeicher, wird nirgends gespeichert
         let logoRatio = 1;
-        let lines = [{ text:'', size:24, font:'helvetica', bold:true }];
+        let lines = [{ type:'text', text:'', size:24, font:'helvetica', bold:true, gap:0 }];
 
         const $ = id => document.getElementById(id);
         const fmt  = () => FORMATS[$('or-format').value] || FORMATS['breit-lang'];
         const effW = () => Math.max(10, fmt().w - (parseFloat($('or-shrinkW').value) || 0));
         const effH = () => Math.max(20, fmt().h - (parseFloat($('or-shrinkH').value) || 0));
+        const MAX_EVEN = 5;                                   // max. Zeilen bei gleichmäßiger Verteilung
+        const isEven = () => $('or-dist').value === 'even';
 
         // ===== Zeilen-Editor =====
         function renderLineEditor() {
@@ -4469,6 +4682,72 @@
             lines.forEach((ln, i) => {
                 const row = document.createElement('div');
                 row.className = 'or-lineRow';
+
+                // --- Bildzeile ---
+                if (ln.type === 'image') {
+                    row.classList.add('or-imgRow');
+
+                    const pick = document.createElement('label');
+                    pick.className = 'or-imgPick';
+                    pick.title = 'Bild auswählen';
+                    if (ln.data) {
+                        const th = document.createElement('img');
+                        th.src = ln.data;
+                        pick.appendChild(th);
+                    }
+                    const cap = document.createElement('span');
+                    cap.textContent = ln.data ? (ln.name || 'Bild ändern …') : 'Bild wählen …';
+                    pick.appendChild(cap);
+
+                    const file = document.createElement('input');
+                    file.type = 'file'; file.accept = 'image/*';
+                    file.style.display = 'none';
+                    file.onchange = e => {
+                        const f = e.target.files && e.target.files[0];
+                        if (!f) return;
+                        const rd = new FileReader();
+                        rd.onload = ev => {
+                            const im = new Image();
+                            im.onload = () => {
+                                ln.ratio = im.naturalWidth / im.naturalHeight || 1;
+                                ln.data = ev.target.result;
+                                ln.name = f.name;
+                                renderLineEditor(); renderPreview();
+                            };
+                            im.src = ev.target.result;
+                        };
+                        rd.readAsDataURL(f);
+                    };
+                    pick.appendChild(file);
+
+                    const ih = document.createElement('input');
+                    ih.type = 'number'; ih.min = 3; ih.max = 150; ih.step = 1;
+                    ih.value = (ln.h == null ? 20 : ln.h);
+                    ih.title = 'Bildhöhe in mm';
+                    ih.className = 'p-2 border rounded font-bold text-sm text-center';
+                    ih.oninput = () => { ln.h = Math.max(3, parseFloat(ih.value) || 20); renderPreview(); };
+
+                    const igp = document.createElement('input');
+                    igp.type = 'number'; igp.min = 0; igp.max = 80; igp.step = 1;
+                    igp.value = (ln.gap == null ? 0 : ln.gap);
+                    igp.title = 'Abstand über diesem Bild (mm)';
+                    igp.className = 'p-2 border rounded font-bold text-sm text-center';
+                    igp.disabled = isEven();
+                    igp.oninput = () => { ln.gap = Math.max(0, parseFloat(igp.value) || 0); renderPreview(); };
+
+                    const idel = document.createElement('button');
+                    idel.type = 'button'; idel.className = 'or-del'; idel.textContent = '\u2715';
+                    idel.title = 'Bildzeile entfernen';
+                    idel.onclick = () => {
+                        if (lines.length === 1) lines[0] = { type:'text', text:'', size:24, font:'helvetica', bold:true, gap:0 };
+                        else lines.splice(i, 1);
+                        renderLineEditor(); renderPreview();
+                    };
+
+                    row.append(pick, ih, igp, idel);
+                    box.appendChild(row);
+                    return;
+                }
 
                 const t = document.createElement('input');
                 t.type = 'text'; t.value = ln.text; t.placeholder = 'Beschriftung …';
@@ -4490,6 +4769,15 @@
                 });
                 f.onchange = () => { ln.font = f.value; renderPreview(); };
 
+                // Abstand über der Zeile (mm) — nur im freien Modus wirksam
+                const gp = document.createElement('input');
+                gp.type = 'number'; gp.min = 0; gp.max = 80; gp.step = 1;
+                gp.value = (ln.gap == null ? 0 : ln.gap);
+                gp.title = 'Abstand über dieser Zeile (mm)';
+                gp.className = 'p-2 border rounded font-bold text-sm text-center';
+                gp.disabled = isEven();
+                gp.oninput = () => { ln.gap = Math.max(0, parseFloat(gp.value) || 0); renderPreview(); };
+
                 const bWrap = document.createElement('label');
                 bWrap.className = 'flex items-center justify-center';
                 const b = document.createElement('input');
@@ -4502,21 +4790,60 @@
                 del.type = 'button'; del.className = 'or-del'; del.textContent = '\u2715';
                 del.title = 'Zeile entfernen';
                 del.onclick = () => {
-                    if (lines.length === 1) lines[0] = { text:'', size:24, font:'helvetica', bold:true };
+                    if (lines.length === 1) lines[0] = { text:'', size:24, font:'helvetica', bold:true, gap:0 };
                     else lines.splice(i, 1);
                     renderLineEditor(); renderPreview();
                 };
 
-                row.append(t, sz, f, bWrap, del);
+                row.append(t, sz, f, gp, bWrap, del);
                 box.appendChild(row);
             });
+
+            // Hinweis + Button-Status
+            const btn = $('or-addLine');
+            const btnImg = $('or-addImage');
+            const hint = $('or-lineHint');
+            const setBtn = (el, off) => {
+                el.disabled = off;
+                el.style.opacity = off ? '.4' : '';
+                el.style.cursor = off ? 'not-allowed' : '';
+            };
+            if (isEven()) {
+                const rest = MAX_EVEN - lines.length;
+                setBtn(btn, rest <= 0);
+                setBtn(btnImg, rest <= 0);
+                hint.textContent = rest > 0
+                    ? 'Die Zeilen werden gleichmäßig über den Rücken verteilt \u2014 noch ' + rest + ' Zeile(n) möglich.'
+                    : 'Maximum von ' + MAX_EVEN + ' Zeilen erreicht. Für mehr Zeilen auf „Frei“ umstellen.';
+            } else {
+                setBtn(btn, false);
+                setBtn(btnImg, false);
+                hint.textContent = 'Über „Abst.“ legst du je Zeile den Abstand nach oben in mm fest.';
+            }
         }
 
         $('or-addLine').onclick = () => {
+            if (isEven() && lines.length >= MAX_EVEN) return;
             const last = lines[lines.length - 1] || {};
-            lines.push({ text:'', size: last.size || 24, font: last.font || 'helvetica', bold: !!last.bold });
+            lines.push({ type:'text', text:'', size: last.size || 24, font: last.font || 'helvetica', bold: !!last.bold, gap:0 });
             renderLineEditor(); renderPreview();
         };
+
+        // Bildzeile (z. B. Schild oder Piktogramm) hinzufügen
+        $('or-addImage').onclick = () => {
+            if (isEven() && lines.length >= MAX_EVEN) return;
+            lines.push({ type:'image', data:null, ratio:1, h:20, gap:0 });
+            renderLineEditor(); renderPreview();
+        };
+
+        // Umschalten zwischen gleichmäßiger Verteilung und freiem Abstand
+        $('or-dist').addEventListener('change', () => {
+            if (isEven() && lines.length > MAX_EVEN) {
+                lines = lines.slice(0, MAX_EVEN);
+                alert('Bei gleichmäßiger Verteilung sind höchstens ' + MAX_EVEN + ' Zeilen möglich \u2014 die überzähligen wurden entfernt.');
+            }
+            renderLineEditor(); renderPreview();
+        });
 
         // ===== Logo (nur im Speicher) =====
         $('or-logoFile').onchange = e => {
@@ -4565,16 +4892,39 @@
 
             const box = $('or-linesBox');
             box.innerHTML = '';
+            const even = isEven();
             const vpos = $('or-vpos').value;
-            box.style.justifyContent = vpos === 'top' ? 'flex-start' : (vpos === 'bottom' ? 'flex-end' : 'center');
-            lines.forEach(ln => {
-                if (!ln.text.trim()) return;
+            // Bei gleichmäßiger Verteilung füllt jede Zeile ein gleich großes Fach
+            box.style.justifyContent = even ? 'stretch'
+                : (vpos === 'top' ? 'flex-start' : (vpos === 'bottom' ? 'flex-end' : 'center'));
+
+            const visible = lines.filter(ln => ln.type === 'image' ? !!ln.data : ln.text.trim());
+            visible.forEach(ln => {
                 const d = document.createElement('div');
-                d.className = 'or-line';
-                d.textContent = ln.text;
-                d.style.fontSize = (ln.size * MM * pxPerMm) + 'px';
-                d.style.fontFamily = FONTS[ln.font].css;
-                d.style.fontWeight = ln.bold ? '700' : '400';
+                if (ln.type === 'image') {
+                    d.className = 'or-line or-line-img';
+                    const im = document.createElement('img');
+                    im.src = ln.data;
+                    im.style.height = ((ln.h || 20) * pxPerMm) + 'px';
+                    im.style.width = 'auto';
+                    d.appendChild(im);
+                } else {
+                    d.className = 'or-line';
+                    d.textContent = ln.text;
+                    d.style.fontSize = (ln.size * MM * pxPerMm) + 'px';
+                    d.style.fontFamily = FONTS[ln.font].css;
+                    d.style.fontWeight = ln.bold ? '700' : '400';
+                }
+                if (even) {
+                    // gleich hohes Fach je Zeile, Text darin mittig
+                    d.style.flex = '1 1 0';
+                    d.style.display = 'flex';
+                    d.style.alignItems = 'center';
+                    d.style.justifyContent = 'center';
+                    d.style.minHeight = '0';
+                } else if (ln.gap) {
+                    d.style.marginTop = (ln.gap * pxPerMm) + 'px';
+                }
                 box.appendChild(d);
             });
 
@@ -4596,8 +4946,31 @@
                 n + ' St\u00fcck = ' + Math.ceil(n / g.perPage) + ' Seite(n)';
         }
 
-        ['or-format','or-shrinkW','or-shrinkH','or-logoH','or-vpos','or-count']
+        ['or-format','or-shrinkW','or-shrinkH','or-logoH','or-vpos','or-count','or-dist']
             .forEach(id => $(id).addEventListener('input', renderPreview));
+
+        // Breite (breit/schmal) und Länge (lang/kurz) über Button-Gruppen wählen
+        let orWidth = 'breit', orLen = 'lang';
+        function applyOrFormat() {
+            $('or-format').value = orWidth + '-' + orLen;
+            renderPreview();
+        }
+        $('or-widthPicker').querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                $('or-widthPicker').querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                orWidth = btn.dataset.w;
+                applyOrFormat();
+            });
+        });
+        $('or-lenPicker').querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                $('or-lenPicker').querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                orLen = btn.dataset.l;
+                applyOrFormat();
+            });
+        });
         window.addEventListener('resize', renderPreview);
 
         // ===== PDF =====
@@ -4625,33 +4998,75 @@
             const maxTextW = W - 2 * PAD_X;
             const blocks = [];
             lines.forEach(ln => {
+                if (ln.type === 'image') {
+                    if (!ln.data) return;
+                    // Bild auf verfügbare Breite begrenzen
+                    let ih = ln.h || 20;
+                    let iw = ih * (ln.ratio || 1);
+                    if (iw > maxTextW) { iw = maxTextW; ih = iw / (ln.ratio || 1); }
+                    blocks.push({ ln, isImg: true, iw, ih, height: ih });
+                    return;
+                }
                 if (!ln.text.trim()) return;
                 doc.setFont(ln.font, ln.bold ? 'bold' : 'normal');
                 doc.setFontSize(ln.size);
-                blocks.push({ ln, wrapped: doc.splitTextToSize(ln.text, maxTextW), lineH: ln.size * MM * 1.18 });
+                const wrapped = doc.splitTextToSize(ln.text, maxTextW);
+                const lineH = ln.size * MM * 1.18;
+                blocks.push({ ln, isImg: false, wrapped, lineH, height: wrapped.length * lineH });
             });
-            const blockH = blocks.reduce((a, b) => a + b.wrapped.length * b.lineH, 0);
+
+            const cx = x + W / 2;
+
+            // ein Block zeichnen, Oberkante bei topY
+            const drawBlock = (bl, topY) => {
+                if (bl.isImg) {
+                    const kind = /^data:image\/jpe?g/i.test(bl.ln.data) ? 'JPEG' : 'PNG';
+                    try { doc.addImage(bl.ln.data, kind, cx - bl.iw / 2, topY, bl.iw, bl.ih); }
+                    catch (e) { console.error(e); }
+                    return;
+                }
+                doc.setFont(bl.ln.font, bl.ln.bold ? 'bold' : 'normal');
+                doc.setFontSize(bl.ln.size);
+                let ty = topY;
+                bl.wrapped.forEach(t => {
+                    doc.text(t, cx, ty + bl.lineH * 0.72, { align:'center' });
+                    ty += bl.lineH;
+                });
+            };
 
             const areaTop = cursorY, areaBot = y + H - PAD_Y;
             const areaH = Math.max(0, areaBot - areaTop);
+            doc.setTextColor(0, 0, 0);
+
+            if (isEven()) {
+                // Gleichmäßige Verteilung: jede Zeile bekommt ein gleich hohes Fach,
+                // der Text sitzt darin vertikal mittig
+                const n = blocks.length;
+                if (!n) return;
+                const slotH = areaH / n;
+                blocks.forEach((b, i) => {
+                    drawBlock(b, areaTop + i * slotH + (slotH - b.height) / 2);
+                });
+                return;
+            }
+
+            // Freier Modus: Abstand je Zeile, Block als Ganzes positioniert
+            const blockH = blocks.reduce((a, b) => a + (b.ln.gap || 0) + b.height, 0);
             const vpos = $('or-vpos').value;
             let ty = areaTop;
             if (vpos === 'middle') ty = areaTop + Math.max(0, (areaH - blockH) / 2);
             else if (vpos === 'bottom') ty = Math.max(areaTop, areaBot - blockH);
 
-            doc.setTextColor(0, 0, 0);
             blocks.forEach(b => {
-                doc.setFont(b.ln.font, b.ln.bold ? 'bold' : 'normal');
-                doc.setFontSize(b.ln.size);
-                b.wrapped.forEach(t => {
-                    doc.text(t, x + W / 2, ty + b.lineH * 0.72, { align:'center' });
-                    ty += b.lineH;
-                });
+                ty += (b.ln.gap || 0);
+                drawBlock(b, ty);
+                ty += b.height;
             });
         }
 
         $('or-pdfBtn').onclick = () => {
-            if (!lines.some(l => l.text.trim()) && !logoData) {
+            const hasContent = lines.some(l => l.type === 'image' ? !!l.data : l.text.trim());
+            if (!hasContent && !logoData) {
                 alert('Bitte mindestens eine Textzeile ausf\u00fcllen oder ein Logo w\u00e4hlen.');
                 return;
             }
