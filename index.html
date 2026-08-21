@@ -653,11 +653,10 @@
             height: 33.333%;
             display: flex; align-items: center; justify-content: center; gap: 3%;
         }
+        /* Bilder füllen ihre Zone wie im PDF; die Zonengröße steuert der Regler */
         #view-tuerschild .ts-hinweis-zone img {
-            max-height: 82%; max-width: 46%; object-fit: contain;
+            max-height: 100%; max-width: 100%; object-fit: contain; flex: 1 1 0; min-width: 0;
         }
-        /* Einzelnes Schild darf die Zone ausfüllen (wie im PDF) */
-        #view-tuerschild .ts-hinweis-zone img:only-child { max-width: 96%; max-height: 100%; }
         #view-tuerschild .ts-preview.nur-hinweis .ts-hinweis-zone {
             position: static; height: 100%; flex-wrap: wrap; gap: 2%;
         }
@@ -679,13 +678,6 @@
         #view-tuerschild .ts-sign .ts-textwrap {
             position: absolute; left: 0; width: 100%;
             display: flex; box-sizing: border-box; overflow: hidden;
-        }
-        #view-tuerschild .ts-sign.nur-hinweis .ts-hinweis-zone {
-            position: static; height: 100%; flex-wrap: wrap; gap: 2%;
-        }
-        #view-tuerschild .ts-sign.nur-hinweis .ts-hinweis-zone img { max-height: 90%; max-width: 90%; }
-        #view-tuerschild .ts-sign.nur-hinweis .ts-hinweis-zone img:not(:only-child) {
-            max-height: 44%; max-width: 44%;
         }
 
         #view-tuerschild .ts-multi-grid {
@@ -1848,6 +1840,11 @@
                 <div id="ts-hinweisPickerWrap" style="display:none;">
                     <label class="block text-sm font-bold mb-1 text-gray-600 uppercase">Hinweisschild wählen</label>
                     <div id="ts-hinweisPicker" class="max-h-72 overflow-y-auto bg-gray-50 p-2 rounded-md border-2"></div>
+                    <div class="flex items-center gap-3 mt-3">
+                        <span class="text-[11px] font-bold text-gray-500 uppercase whitespace-nowrap">Schildgröße</span>
+                        <input type="range" id="ts-hinweisScale" min="20" max="100" value="100" class="flex-1 accent-[#064e3b]">
+                        <span id="ts-hinweisScaleVal" class="font-mono font-bold w-12 text-right text-sm">100 %</span>
+                    </div>
                 </div>
 
                 <!-- Textposition -->
@@ -4454,7 +4451,9 @@
             // Kontur
             contourOn: false, contourW: 3, contourInset: 6, contourColor: '#000000',
             // Text
-            vpos: 'middle', hpos: 'center', textColor: '#000000'
+            vpos: 'middle', hpos: 'center', textColor: '#000000',
+            // Größe des Hinweisschild-Piktogramms in Prozent der verfügbaren Fläche
+            hinweisScale: 100
         };
 
         // --- Muster als Bild erzeugen (gleiche Quelle für Vorschau und PDF) ---
@@ -4636,6 +4635,18 @@
         $ts('ts-contourW').addEventListener('input', e => { state.contourW = parseFloat(e.target.value) || 3; updatePreview(); });
         $ts('ts-contourInset').addEventListener('input', e => { state.contourInset = parseFloat(e.target.value) || 0; updatePreview(); });
         $ts('ts-contourColor').addEventListener('input', e => { state.contourColor = e.target.value; updatePreview(); });
+        $ts('ts-hinweisScale').addEventListener('input', e => {
+            state.hinweisScale = parseInt(e.target.value) || 100;
+            $ts('ts-hinweisScaleVal').textContent = state.hinweisScale + ' %';
+            updatePreview();
+        });
+
+        // Box um den Faktor verkleinern und mittig halten
+        function scaleBox(x, y, w, h, pct) {
+            const f = Math.max(0.05, (pct || 100) / 100);
+            const nw = w * f, nh = h * f;
+            return { x: x + (w - nw) / 2, y: y + (h - nh) / 2, w: nw, h: nh };
+        }
 
         // --- Text-Eingabe ---
         const textInput = document.getElementById('ts-text');
@@ -4780,15 +4791,31 @@
             content.style.width = mm(g.iw); content.style.height = mm(g.ih);
             sign.appendChild(content);
 
-            if (nurHinweis) {
+            // Hilfsrahmen, damit die gewählte Schildfläche auch bei weißem
+            // Hintergrund sichtbar ist (nur Vorschau, wird nicht gedruckt)
+            if (state.sizeMode === 'custom') {
+                sign.style.outline = '1px dashed #94a3b8';
+                sign.style.outlineOffset = '-1px';
+            }
+
+            // Piktogramm-Zone maßstäblich aufbauen (gleiche Rechnung wie im PDF)
+            const buildZone = (bx, by, bw, bh) => {
+                const z = scaleBox(bx, by, bw, bh, state.hinweisScale);
                 const hz = document.createElement('div');
                 hz.className = 'ts-hinweis-zone';
+                hz.style.position = 'absolute';
+                hz.style.left = mm(z.x); hz.style.top = mm(z.y);
+                hz.style.width = mm(z.w); hz.style.height = mm(z.h);
                 state.hinweisList.forEach(h => {
                     const im = document.createElement('img');
                     im.src = signSrc(h.file);
                     hz.appendChild(im);
                 });
-                content.appendChild(hz);
+                return hz;
+            };
+
+            if (nurHinweis) {
+                content.appendChild(buildZone(0, 0, g.iw, g.ih));
                 node.appendChild(sign);
                 return;
             }
@@ -4821,14 +4848,7 @@
             }
 
             if (mitHinweis) {
-                const hz = document.createElement('div');
-                hz.className = 'ts-hinweis-zone';
-                state.hinweisList.forEach(h => {
-                    const im = document.createElement('img');
-                    im.src = signSrc(h.file);
-                    hz.appendChild(im);
-                });
-                content.appendChild(hz);
+                content.appendChild(buildZone(0, g.ih * (2/3), g.iw, g.ih * (1/3)));
             }
 
             node.appendChild(sign);
@@ -4937,12 +4957,14 @@
             const ix = c.x + g.ix, iy = c.y + g.iy;
 
             if (nurHinweis) {
-                drawHinweisRow(doc, files, ix, iy, g.iw, g.ih);
+                const z = scaleBox(ix, iy, g.iw, g.ih, state.hinweisScale);
+                drawHinweisRow(doc, files, z.x, z.y, z.w, z.h);
                 return;
             }
             const textH = mitHinweis ? g.ih * (2/3) : g.ih;
             if (mitHinweis) {
-                drawHinweisRow(doc, files, ix, iy + g.ih * (2/3), g.iw, g.ih * (1/3) * 0.92);
+                const z = scaleBox(ix, iy + g.ih * (2/3), g.iw, g.ih * (1/3), state.hinweisScale);
+                drawHinweisRow(doc, files, z.x, z.y, z.w, z.h);
             }
             if (hasText) {
                 drawTextBlock(doc, { x: ix, y: iy, w: g.iw, h: textH }, iy, textH);
