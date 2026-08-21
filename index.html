@@ -732,9 +732,6 @@
             display:flex; flex-direction:column; box-sizing:border-box;
             overflow:hidden; position:relative; flex-shrink:0;
         }
-        #view-ordner .or-inner {
-            box-sizing:border-box; display:flex; flex-direction:column; overflow:hidden;
-        }
         #view-ordner .or-logo { width:100%; display:flex; justify-content:center; flex-shrink:0; }
         #view-ordner .or-logo img { max-width:92%; object-fit:contain; display:block; }
         #view-ordner .or-lines { width:100%; flex:1; display:flex; flex-direction:column; overflow:hidden; }
@@ -2202,46 +2199,6 @@
                     </div>
                 </div>
 
-                <div class="p-3 bg-gray-50 rounded-md border space-y-3">
-                    <label class="block text-xs font-bold text-gray-500 uppercase">Gestaltung</label>
-
-                    <label class="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase cursor-pointer">
-                        <input type="checkbox" id="or-vertical" class="accent-[#064e3b] w-4 h-4">
-                        Text quer stellen (90\u00b0 gedreht)
-                    </label>
-
-                    <div class="flex items-center gap-3">
-                        <span class="text-[11px] font-bold text-gray-500 uppercase w-24">Textfarbe</span>
-                        <input type="color" id="or-textColor" value="#000000" class="w-10 h-8 border rounded cursor-pointer p-0">
-                        <input type="text" id="or-textColorHex" value="#000000" class="flex-1 p-2 border rounded font-mono text-sm">
-                    </div>
-
-                    <label class="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase cursor-pointer">
-                        <input type="checkbox" id="or-bgOn" class="accent-[#064e3b] w-4 h-4">
-                        Hintergrund farbig
-                    </label>
-                    <div class="flex items-center gap-3">
-                        <span class="text-[11px] font-bold text-gray-500 uppercase w-24">Hintergrund</span>
-                        <input type="color" id="or-bgColor" value="#ffffff" class="w-10 h-8 border rounded cursor-pointer p-0">
-                        <input type="text" id="or-bgColorHex" value="#ffffff" class="flex-1 p-2 border rounded font-mono text-sm">
-                    </div>
-
-                    <label class="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase cursor-pointer">
-                        <input type="checkbox" id="or-konturOn" class="accent-[#064e3b] w-4 h-4">
-                        Kontur (Rahmen)
-                    </label>
-                    <div class="flex items-center gap-3">
-                        <span class="text-[11px] font-bold text-gray-500 uppercase w-24">Konturfarbe</span>
-                        <input type="color" id="or-konturColor" value="#064e3b" class="w-10 h-8 border rounded cursor-pointer p-0">
-                        <input type="text" id="or-konturColorHex" value="#064e3b" class="flex-1 p-2 border rounded font-mono text-sm">
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span class="text-[11px] font-bold text-gray-500 uppercase w-24">Dicke</span>
-                        <input type="range" id="or-konturW" min="0.2" max="4" step="0.1" value="0.8" class="flex-1 accent-[#064e3b]">
-                        <span id="or-konturWVal" class="font-mono font-bold w-16 text-right text-sm">0.8 mm</span>
-                    </div>
-                </div>
-
                 <label class="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase cursor-pointer">
                     <input type="checkbox" id="or-cutline" class="accent-[#064e3b] w-4 h-4" checked>
                     Schnittlinie mitdrucken
@@ -2258,10 +2215,8 @@
             <span class="text-sm font-bold text-gray-400 mb-3 uppercase tracking-widest">Vorschau (maßstabsgetreu)</span>
             <div class="or-wrap">
                 <div id="or-spine" class="or-spine">
-                    <div id="or-inner" class="or-inner">
-                        <div id="or-logoBox" class="or-logo" style="display:none;"><img id="or-logoImg" alt="Logo"></div>
-                        <div id="or-linesBox" class="or-lines"></div>
-                    </div>
+                    <div id="or-logoBox" class="or-logo" style="display:none;"><img id="or-logoImg" alt="Logo"></div>
+                    <div id="or-linesBox" class="or-lines"></div>
                 </div>
             </div>
             <p id="or-fmtInfo" class="mt-3 text-xs text-gray-500 text-center uppercase font-bold"></p>
@@ -5125,34 +5080,6 @@
         const MAX_EVEN = 5;                                   // max. Zeilen bei gleichmäßiger Verteilung
         const isEven = () => $('or-dist').value === 'even';
 
-        // ===== Gestaltung (Farben / Kontur / Textausrichtung) =====
-        function hexToRgb(hex){
-            const m = /^#?([0-9a-fA-F]{6})$/.exec((hex||"").trim());
-            if (!m) return { r:0, g:0, b:0 };
-            const n = parseInt(m[1], 16);
-            return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
-        }
-        const design = () => ({
-            vertical:    $('or-vertical').checked,
-            textColor:   $('or-textColor').value,
-            bgOn:        $('or-bgOn').checked,
-            bgColor:     $('or-bgColor').value,
-            konturOn:    $('or-konturOn').checked,
-            konturColor: $('or-konturColor').value,
-            konturW:     parseFloat($('or-konturW').value) || 0
-        });
-        // Farbwähler <-> Hex-Eingabe koppeln
-        function linkColor(colorId, hexId){
-            const col = $(colorId), hx = $(hexId);
-            col.addEventListener('input', () => { hx.value = col.value; renderPreview(); });
-            hx.addEventListener('input', () => {
-                if (/^#?[0-9a-fA-F]{6}$/.test(hx.value.trim())){
-                    const v = hx.value.trim().startsWith('#') ? hx.value.trim() : '#'+hx.value.trim();
-                    col.value = v; renderPreview();
-                }
-            });
-        }
-
         // ===== Zeilen-Editor =====
         function renderLineEditor() {
             const box = $('or-lines');
@@ -5345,47 +5272,18 @@
         function renderPreview() {
             const W = effW(), H = effH();
             const spine = $('or-spine');
-            const inner = $('or-inner');
             const pxPerMm = Math.min(430 / H, 300 / W);
-            const dz = design();
 
             spine.style.width  = (W * pxPerMm) + 'px';
             spine.style.height = (H * pxPerMm) + 'px';
-            spine.style.padding = '0';
-
-            // Hintergrundfarbe
-            spine.style.background = dz.bgOn ? dz.bgColor : '#fff';
-
-            // Kontur (Rahmen) \u2014 sonst dezenter Vorschau-Rand
-            const borderPx = (dz.konturOn && dz.konturW > 0) ? (dz.konturW * pxPerMm) : 1;
-            spine.style.border = (dz.konturOn && dz.konturW > 0)
-                ? borderPx + 'px solid ' + dz.konturColor
-                : '1px solid #94a3b8';
-
-            // Innen-Container (wird bei \u201eText quer\u201c um 90\u00b0 gedreht)
-            const contentW = (W * pxPerMm) - 2 * borderPx;
-            const contentH = (H * pxPerMm) - 2 * borderPx;
-            inner.style.position = 'absolute';
-            inner.style.paddingLeft = inner.style.paddingRight = (PAD_X * pxPerMm) + 'px';
-            inner.style.paddingTop  = inner.style.paddingBottom = (PAD_Y * pxPerMm) + 'px';
-            if (dz.vertical) {
-                inner.style.width  = contentH + 'px';
-                inner.style.height = contentW + 'px';
-                inner.style.left = '50%'; inner.style.top = '50%';
-                inner.style.transform = 'translate(-50%,-50%) rotate(-90deg)';
-            } else {
-                inner.style.width  = contentW + 'px';
-                inner.style.height = contentH + 'px';
-                inner.style.left = '0'; inner.style.top = '0';
-                inner.style.transform = 'none';
-            }
+            spine.style.paddingLeft = spine.style.paddingRight = (PAD_X * pxPerMm) + 'px';
+            spine.style.paddingTop  = spine.style.paddingBottom = (PAD_Y * pxPerMm) + 'px';
 
             $('or-sizeInfo').textContent =
                 'Druckma\u00df: ' + W.toFixed(1) + ' \u00d7 ' + H.toFixed(1) +
                 ' mm (Norm ' + fmt().w + ' \u00d7 ' + fmt().h + ' mm)';
             $('or-fmtInfo').textContent = fmt().label;
             $('or-logoHVal').textContent = $('or-logoH').value + ' mm';
-            $('or-konturWVal').textContent = (parseFloat($('or-konturW').value) || 0).toFixed(1) + ' mm';
 
             const lb = $('or-logoBox');
             if (logoData) {
@@ -5421,7 +5319,6 @@
                     d.style.fontSize = (ln.size * MM * pxPerMm) + 'px';
                     d.style.fontFamily = FONTS[ln.font].css;
                     d.style.fontWeight = ln.bold ? '700' : '400';
-                    d.style.color = dz.textColor;
                 }
                 if (even) {
                     // gleich hohes Fach je Zeile, Text darin mittig
@@ -5454,13 +5351,8 @@
                 n + ' St\u00fcck = ' + Math.ceil(n / g.perPage) + ' Seite(n)';
         }
 
-        ['or-format','or-shrinkW','or-shrinkH','or-logoH','or-vpos','or-count','or-dist','or-konturW']
+        ['or-format','or-shrinkW','or-shrinkH','or-logoH','or-vpos','or-count','or-dist']
             .forEach(id => $(id).addEventListener('input', renderPreview));
-        ['or-vertical','or-bgOn','or-konturOn']
-            .forEach(id => $(id).addEventListener('change', renderPreview));
-        linkColor('or-textColor', 'or-textColorHex');
-        linkColor('or-bgColor', 'or-bgColorHex');
-        linkColor('or-konturColor', 'or-konturColorHex');
 
         // Breite (breit/schmal) und Länge (lang/kurz) über Button-Gruppen wählen
         let orWidth = 'breit', orLen = 'lang';
@@ -5489,67 +5381,31 @@
         // ===== PDF =====
         function drawSpine(doc, x, y) {
             const W = effW(), H = effH();
-            const dz = design();
 
-            // Hintergrundfarbe
-            if (dz.bgOn) {
-                const c = hexToRgb(dz.bgColor);
-                doc.setFillColor(c.r, c.g, c.b);
-                doc.rect(x, y, W, H, 'F');
-            }
-
-            // Schnittlinie
             if ($('or-cutline').checked) {
                 doc.setDrawColor(190, 195, 205);
                 doc.setLineWidth(0.2);
                 doc.rect(x, y, W, H);
             }
 
-            // Kontur (Rahmen) \u2014 innen liegend, damit sie beim Schneiden erhalten bleibt
-            if (dz.konturOn && dz.konturW > 0) {
-                const c = hexToRgb(dz.konturColor);
-                doc.setDrawColor(c.r, c.g, c.b);
-                doc.setLineWidth(dz.konturW);
-                const hw = dz.konturW / 2;
-                doc.rect(x + hw, y + hw, W - dz.konturW, H - dz.konturW);
-            }
+            let cursorY = y + PAD_Y;
 
-            // Logischer Zeichenbereich. Bei \u201eText quer\u201c wird alles um 90\u00b0 gedreht:
-            // Textzeilen laufen dann entlang der langen Kante des R\u00fcckens.
-            const vertical = dz.vertical;
-            const CW = W - 2 * PAD_X, CH = H - 2 * PAD_Y;
-            const LW = vertical ? CH : CW;   // logische Breite (Zentrierung / Umbruch)
-            const LH = vertical ? CW : CH;   // logische H\u00f6he (Zeilen-Stapelung)
-            const Ccx = x + W / 2, Ccy = y + H / 2;
-            const lcx = LW / 2;
-            const angle = vertical ? 90 : 0;
-            const tc = hexToRgb(dz.textColor);
-
-            // logischen Punkt (Ursprung oben links) auf Seiten-Koordinaten abbilden
-            const map = (lx, ly) => {
-                if (!vertical) return { px: x + PAD_X + lx, py: y + PAD_Y + ly };
-                const dx = lx - LW / 2, dy = ly - LH / 2;   // Rotation -90\u00b0: (dx,dy)->(dy,-dx)
-                return { px: Ccx + dy, py: Ccy - dx };
-            };
-
-            const maxTextW = LW;
-            let logicalCursor = 0;
-
-            // Logo (oben)
             if (logoData) {
                 const lh = parseFloat($('or-logoH').value) || 20;
                 let lw = lh * logoRatio, h = lh;
-                if (lw > maxTextW) { lw = maxTextW; h = lw / logoRatio; }
+                const maxW = W - 2 * PAD_X;
+                if (lw > maxW) { lw = maxW; h = lw / logoRatio; }
                 const kind = /^data:image\/jpe?g/i.test(logoData) ? 'JPEG' : 'PNG';
-                const pc = map(lcx, logicalCursor + h / 2);
-                try { doc.addImage(logoData, kind, pc.px - lw / 2, pc.py - h / 2, lw, h); } catch (e) { console.error(e); }
-                logicalCursor += h + 3;
+                try { doc.addImage(logoData, kind, x + (W - lw) / 2, cursorY, lw, h); } catch (e) { console.error(e); }
+                cursorY += h + 3;
             }
 
+            const maxTextW = W - 2 * PAD_X;
             const blocks = [];
             lines.forEach(ln => {
                 if (ln.type === 'image') {
                     if (!ln.data) return;
+                    // Bild auf verfügbare Breite begrenzen
                     let ih = ln.h || 20;
                     let iw = ih * (ln.ratio || 1);
                     if (iw > maxTextW) { iw = maxTextW; ih = iw / (ln.ratio || 1); }
@@ -5564,30 +5420,32 @@
                 blocks.push({ ln, isImg: false, wrapped, lineH, height: wrapped.length * lineH });
             });
 
-            // ein Block zeichnen, Oberkante bei logischem topY
+            const cx = x + W / 2;
+
+            // ein Block zeichnen, Oberkante bei topY
             const drawBlock = (bl, topY) => {
                 if (bl.isImg) {
                     const kind = /^data:image\/jpe?g/i.test(bl.ln.data) ? 'JPEG' : 'PNG';
-                    const pc = map(lcx, topY + bl.ih / 2);
-                    try { doc.addImage(bl.ln.data, kind, pc.px - bl.iw / 2, pc.py - bl.ih / 2, bl.iw, bl.ih); }
+                    try { doc.addImage(bl.ln.data, kind, cx - bl.iw / 2, topY, bl.iw, bl.ih); }
                     catch (e) { console.error(e); }
                     return;
                 }
                 doc.setFont(bl.ln.font, bl.ln.bold ? 'bold' : 'normal');
                 doc.setFontSize(bl.ln.size);
-                doc.setTextColor(tc.r, tc.g, tc.b);
-                let ly = topY;
+                let ty = topY;
                 bl.wrapped.forEach(t => {
-                    const p = map(lcx, ly + bl.lineH * 0.72);
-                    doc.text(t, p.px, p.py, { align: 'center', angle: angle });
-                    ly += bl.lineH;
+                    doc.text(t, cx, ty + bl.lineH * 0.72, { align:'center' });
+                    ty += bl.lineH;
                 });
             };
 
-            const areaTop = logicalCursor, areaBot = LH;
+            const areaTop = cursorY, areaBot = y + H - PAD_Y;
             const areaH = Math.max(0, areaBot - areaTop);
+            doc.setTextColor(0, 0, 0);
 
             if (isEven()) {
+                // Gleichmäßige Verteilung: jede Zeile bekommt ein gleich hohes Fach,
+                // der Text sitzt darin vertikal mittig
                 const n = blocks.length;
                 if (!n) return;
                 const slotH = areaH / n;
@@ -5597,6 +5455,7 @@
                 return;
             }
 
+            // Freier Modus: Abstand je Zeile, Block als Ganzes positioniert
             const blockH = blocks.reduce((a, b) => a + (b.ln.gap || 0) + b.height, 0);
             const vpos = $('or-vpos').value;
             let ty = areaTop;
